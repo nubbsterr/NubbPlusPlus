@@ -1,11 +1,12 @@
 #include <iostream>
 #include "lexer.cpp"
 
-// tester functions below
+// tester functions below, DO NOT FORGET TO RUN INIT_SOURCE ON OBJECT BEFORE TESTING
 
 void testGetToken() // tests Lexer token returning ability
 {
-    Lexer lex {"+\"This is a string\" # This is a comment!\n */"}; 
+    Lexer lex {"+\"This is a string\" # This is a comment!\n */"};
+    lex.init_source(); 
     auto token = lex.getToken();
 
     while (token.tokenKind != TokenType::Token::ENDOFFILE)
@@ -31,7 +32,7 @@ void testCharacterReturn() // tests Lexer to return character in source code str
 
 int main()
 {
-    testGetToken();
+    testCharacterReturn();
 
     return 0;
 }
