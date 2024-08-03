@@ -5,7 +5,7 @@
 
 void testGetToken() // tests Lexer token returning ability
 {
-    Lexer lex {"+\"This is a string\" # This is a comment!\n */"};
+    Lexer lex {"IF+-123 foo*THEN/"};
     lex.init_source(); 
     auto token = lex.getToken();
 
@@ -32,7 +32,7 @@ void testCharacterReturn() // tests Lexer to return character in source code str
 
 int main()
 {
-    testCharacterReturn();
+    testGetToken();
 
     return 0;
 }

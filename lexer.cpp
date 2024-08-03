@@ -2,11 +2,13 @@
 To-do/notes:
 
 - rework getToken() to use switch-case statement instead of horrendous if-else chain
+    - might result in poor readability, will require professional tip/testing in terms of compilation speed
 - potentionally change TokenType struct to return string of character, like 'Token.PLUS' rather than 202, would require change of enum to separate logic
 - potentially revamp std::string convertChartoString() to be more performant (std::string creation is expensive?)
     - aim to revamp std::string creation performance, remove as many intializations as possible hopefully
 - ensure all function/struct descriptions are up-to-date!!
-- start
+- all double equal (e.g. ==, <=, >=, !=) getToken() calls us hardcoded strings, might revamp but works given testing
+- isKeyword() static method in Token() class runs a massive if-else chain, might want to change to for-loop if a method to iterate over enum names is possible
 
 */
 
@@ -14,13 +16,6 @@ To-do/notes:
 #include <string> // for std::string
 #include <cstdlib> // for std::exit
 #include <iostream> // for abort() error output
-
-// Create new token including raw text of token and Enum value in TokenType::Token
-struct Token
-{
-    std::string tokenText {}; // raw text of token
-    int tokenKind; // enum value of token from TokenType::Token
-};
 
 // holds value of tokens, much like a dictionary, used for organizing tokens
 struct TokenType
@@ -59,6 +54,43 @@ struct TokenType
         // Unknown Token.
         UNKNOWN = 300, // default value of token variable in getToken() method
     };
+};
+
+
+// Create new token including raw text of token and Enum value in TokenType::Token
+struct Token
+{
+    std::string tokenText {}; // raw text of token
+    int tokenKind; // enum value of token from TokenType::Token
+
+    // determine if string is a keyword or identifier from getToken()
+    static auto isKeyword(std::string_view tokText)
+    { // huge if-else chain, can't iterate over names of enum values, might fix down the line
+        if (tokText == "LABEL")
+            return TokenType::Token::LABEL;
+        else if (tokText == "GOTO")
+            return TokenType::Token::GOTO;
+        else if (tokText == "PRINT")
+            return TokenType::Token::PRINT;
+        else if (tokText == "INPUT")
+            return TokenType::Token::INPUT;
+        else if (tokText == "LET")
+            return TokenType::Token::LET;
+        else if (tokText == "IF")
+            return TokenType::Token::IF;
+        else if (tokText == "THEN")
+            return TokenType::Token::THEN;
+        else if (tokText == "ENDIF")
+            return TokenType::Token::ENDIF;
+        else if (tokText == "WHILE")
+            return TokenType::Token::WHILE;
+        else if (tokText == "REPEAT")
+            return TokenType::Token::REPEAT;
+        else if (tokText == "ENDWHILE")
+            return TokenType::Token::ENDWHILE;
+        else
+            return TokenType::Token::IDENT; // no keywords match, return identifier token enum
+    }
 };
 
 // Main lexer made to parse source code string and return tokens, strings, etc.
@@ -105,7 +137,7 @@ struct Lexer
         return source[curPos]; 
     }
    
-    // exit on invalid token with error message
+    // exit on fatal error like illegal character in compilation
     void abort(std::string_view message, std::string_view optional) // optional is for sending extra info for exceptions/abort reason
     {
         std::cout << "Lexing error. " << message << optional;
@@ -174,9 +206,9 @@ struct Lexer
         {
             if (peekChar() == '=')
             {
-                auto token = Token {convertChartoString(curChar), TokenType::Token::EQEQ};
-                // nextChar runs twice to get to next equal sign, then again to go to next token in source
                 nextChar();
+                auto token = Token {"==", TokenType::Token::EQEQ};
+                // nextChar runs twice to get to next equal sign, then again to go to next token in source
                 nextChar();
                 return token;
             }
@@ -191,8 +223,9 @@ struct Lexer
         {
             if (peekChar() == '=')
             {
-                auto token = Token {convertChartoString(curChar), TokenType::Token::GTEQ};
                 nextChar();
+                auto token = Token {">=", TokenType::Token::GTEQ};
+                // nextChar runs twice to get to next equal sign, then again to go to next token in source
                 nextChar();
                 return token;
             }
@@ -207,8 +240,9 @@ struct Lexer
         {
             if (peekChar() == '=')
             {
-                auto token = Token {convertChartoString(curChar), TokenType::Token::LTEQ};
                 nextChar();
+                auto token = Token {"<=", TokenType::Token::LTEQ};
+                // nextChar runs twice to get to next equal sign, then again to go to next token in source
                 nextChar();
                 return token;
             }
@@ -223,8 +257,9 @@ struct Lexer
         {
             if (peekChar() == '=')
             {
-                auto token = Token {convertChartoString(curChar), TokenType::Token::NOTEQ};
                 nextChar();
+                auto token = Token {"!=", TokenType::Token::NOTEQ};
+                // nextChar runs twice to get to next equal sign, then again to go to next token in source
                 nextChar();
                 return token;
             }
@@ -246,22 +281,64 @@ struct Lexer
                 }
                 nextChar(); // keep going until we reached end of string, marked by second quotation mark
             }
-            std::string subStrToken {source}; // need to make copy here since Token struct takes std::string parameter, conversion possible?
-
             // substr starts from first parameter index then extracts until it reaches (2nd param value) length of characters, not to the index of the second parameter!
             // 2nd param is to the total length of the string - 1, to discard quotation mark
-            auto token = Token {std::string(subStrToken).substr(startPosStr, (curPos-startPosStr)-1), TokenType::Token::STRING}; 
+            auto token = Token {std::string(source).substr(startPosStr, (curPos-startPosStr)-1), TokenType::Token::STRING}; 
             nextChar(); // skip over second quotation mark to prevent abort
+            return token;
+        }
+        else if (std::isdigit(curChar)) // isdigit function takes int parameter, implicit conversion
+        {
+            size_t startPosStr = curPos - 1; // mark start of number(s) to extract
+            
+            while (isdigit(peekChar()))
+            {
+                nextChar();
+            }
+            if (peekChar() == '.') // decimal point
+            {
+                nextChar();
+
+                if (!(isdigit(peekChar()))) // not integral element after decimal point, WILL NOT CATCH NON-INTEGRAL ELEMENT AFTER 1ST NUMBER, unknown token will be returned instead on else statement below
+                {
+                    abort("Illegal character in number: ", std::to_string(curChar)); // send additional diagnostic info
+                }
+                while ((isdigit(peekChar())))
+                {
+                    nextChar();
+                }
+            }
+            // substr starts from first parameter index then extracts until it reaches (2nd param value) length of characters, not to the index of the second parameter!
+            // 2nd param is to the last number in token
+            auto token = Token {std::string(source).substr(startPosStr, (curPos-startPosStr)), TokenType::Token::NUMBER}; 
+            nextChar(); // continue to next character to avoid checking another number and aborting
+            return token;
+        }
+        else if (isalpha(curChar)) // next string of character might be an identifier or keyword
+        {
+            size_t startPosStr = curPos - 1; // mark start of character(s) to extract for keyword/identifier
+
+            while (isalnum(curChar)) // retrieve all consective alphanumeric characters, until non-alphanumeric character is reached (e.g. whitespace)
+            {
+                nextChar();
+            }
+            // create substring of keyword or identifier, then check if substring is keyword or identifier
+            auto subStrToken = std::string(source).substr(startPosStr, (curPos-startPosStr) - 1);
+            auto keyword = Token::isKeyword(subStrToken);
+
+            // substr starts from first parameter index then extracts until it reaches (2nd param value) length of characters, not to the index of the second parameter!
+            // 2nd param is to the last character in keyword/identifier
+            auto token = Token {subStrToken, keyword}; 
             return token;
         }
         else if (curChar == '\0') // EOF token
         {
-            auto token = Token {convertChartoString(curChar), TokenType::Token::ENDOFFILE}; // "no token" returned on EOF
+            auto token = Token {"EOF CHARACTER", TokenType::Token::ENDOFFILE}; // "no token" returned on EOF
             nextChar(); // keep moving through source string
             return token;
         }
         else // unknown token
-            abort("Unknown token: ", std::to_string(curChar)); 
+            abort("Unknown token: ", convertChartoString(curChar)); // send additional diagnostic info
 
         return token; // solely here to satisfy g++
     }
