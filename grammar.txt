@@ -1,0 +1,17 @@
+# All grammar rules of Nubb++, where ::= means "defined as". 
+# E.g. a program is defined as zero or more statements, or program::={statement}
+
+program ::= {statement}
+statement ::= "PRINT" (expression | string) nl
+    | "IF" comparison "THEN" nl {statement} "ENDIF" nl
+    | "WHILE" comparison "REPEAT" nl {statement} "ENDWHILE" nl
+    | "LABEL" ident nl
+    | "GOTO" ident nl
+    | "LET" ident "=" expression nl
+    | "INPUT" ident nl
+comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
+expression ::= term {( "-" | "+" ) term}
+term ::= unary {( "/" | "*" ) unary}
+unary ::= ["+" | "-"] primary
+primary ::= number | ident
+nl ::= '\n'+
