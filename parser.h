@@ -9,12 +9,13 @@ struct Parser
     Token peekToken;
     Token curToken;
 
-    void abort(std::string_view message, int optional, std::string_view optional_, int optional__);
+    void abort(std::string_view message, auto optional, std::string_view optional_, auto optional__);
     void nextToken();
     auto checkToken(TokenType::Token tokenKind);
     auto checkPeek(TokenType::Token tokenKind);
     void match(TokenType::Token tokenKind);
     void nl();
+    void comparison();
     void expression();
     void statement();
     void program();
