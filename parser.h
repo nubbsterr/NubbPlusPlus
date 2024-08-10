@@ -14,9 +14,13 @@ struct Parser
     auto checkToken(TokenType::Token tokenKind);
     auto checkPeek(TokenType::Token tokenKind);
     void match(TokenType::Token tokenKind);
+    bool isComparisonOperator();
     void nl();
-    void comparison();
+    void primary();
+    void term();
+    void unary();
     void expression();
+    void comparison();
     void statement();
     void program();
     void init();

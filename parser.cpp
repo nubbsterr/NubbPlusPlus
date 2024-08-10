@@ -40,27 +40,99 @@ void Parser::match(TokenType::Token tokenKind)
     nextToken();
 }
 
+// return true if current token is a comparison operator like <=, ==, etc. false otherwise
+bool Parser::isComparisonOperator()
+{
+    return checkToken(TokenType::Token::GT) || checkToken(TokenType::Token::GTEQ) || checkToken(TokenType::Token::LT) || checkToken(TokenType::Token::LTEQ) || checkToken(TokenType::Token::EQEQ) || checkToken(TokenType::Token::NOTEQ);
+}
+
 // parse for newlines, nl ::= '\n'+
 void Parser::nl()
 {
     std::cout << "[TRACE] NEWLINE\n";
 
     match(TokenType::Token::NEWLINE); // ensure we have a newline with our current statement so it's valid
-    while (checkToken(TokenType::Token::NEWLINE)) // can handle multiple newlines as well, i.e. empty lines after statements
+    while(checkToken(TokenType::Token::NEWLINE)) // can handle multiple newlines as well, i.e. empty lines after statements
     {
         nextToken();
     }
+}
+
+// parse for identifier or integral type or constant integral literal, primary ::= number | ident
+void Parser::primary()
+{
+    std::cout << "[TRACE] PRIMARY (" << curToken.tokenText << ")\n"; // prints primary trace with text of primary
+
+    if (checkToken(TokenType::Token::NUMBER)) // constant literal
+    {
+        nextToken(); // continue parsing
+    }
+    else if (checkToken(TokenType::Token::IDENT)) // identifier of integral type
+    {
+        nextToken(); // continue parsing
+    }
+    else // an unknown value or otherwise non-integral type, abort
+    {
+        abort("Unexpected token at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+    }
+}
+
+// parse for division/multiplcation operations, term ::= unary {( "/" | "*" ) unary}
+void Parser::term()
+{
+    std::cout << "[TRACE] TERM\n";
+
+    unary(); // parse for number at beginning of term expression
+    // ensure we have one * or / symbol for valid term expression
+    while (checkToken(TokenType::Token::ASTERISK) || checkToken(TokenType::Token::SLASH))
+    {
+        nextToken(); // fetch * or / symbol
+        unary(); // then parse for other number in expression
+    }
+}
+
+// parse for numbers or identifiers used for mathematical expression, signed positive by default or specified in code,  unary ::= ["+" | "-"] primary
+void Parser::unary()
+{
+    std::cout << "[TRACE] UNARY\n";
+
+    // can have + or - symbol next to integral value/number
+    if (checkToken(TokenType::Token::PLUS) || checkToken(TokenType::Token::MINUS))
+    {
+        nextToken(); // fetch integral value/number after sign
+    }
+    primary();
 }
 
 // parse for expressions, expression ::= term {( "-" | "+" ) term}
 void Parser::expression()
 {
     std::cout << "[TRACE] EXPRESSION\n";
+
+    term();
+    // ensure we have one MINUS or PLUS symbol for valid mathematical expression
+    while (checkToken(TokenType::Token::PLUS) || checkToken(TokenType::Token::MINUS))
+    {
+        nextToken();
+        term();
+    }
 }
 
+// parse for comparison/boolean statement, comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
 void Parser::comparison()
 {
     std::cout << "[TRACE] COMPARISON\n";
+
+    expression(); // parse for expression in comparison
+    if (isComparisonOperator()) // see if there is a valid operator for comparison
+    {
+        nextToken(); // parse for comparison token
+        expression(); // parse for other expression
+    }
+    else
+    {
+        abort("Expected comparison at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+    }
 }
 
 // parse for statements, statement ::= "PRINT" (expression | string) nl | IF comparison, etc.
