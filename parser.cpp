@@ -1,5 +1,6 @@
 #include <cstdlib> // std::exit
 #include <iostream> // IO
+#include <set>
 
 #include "lexer.h" // forward-declaration of lexer componenets
 #include "parser.h" 
@@ -69,6 +70,10 @@ void Parser::primary()
     }
     else if (checkToken(TokenType::Token::IDENT)) // identifier of integral type
     {
+        if (!(symbols.contains(curToken.tokenText)))
+        {
+            abort("Referencing variable before assignment: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+        }
         nextToken(); // continue parsing
     }
     else // an unknown value or otherwise non-integral type, abort
@@ -187,18 +192,33 @@ void Parser::statement()
     {
         std::cout << "[TRACE] STATEMENT-LABEL\n";
         nextToken();
+
+        if (labelsDeclared.contains(curToken.tokenText)) // ensure LABEL given doesn't exist to prevent redefiniton, otherwise add to set
+        {
+            abort("Label already exists: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+        }
+        labelsDeclared.insert(curToken.tokenText); // add LABEL to set since there's no redefinition
+
         match(TokenType::Token::IDENT); // match for identifier after label, newline inserted at end of statement() function
     }
     else if (checkToken(TokenType::Token::GOTO)) // "GOTO" ident nl
     {
         std::cout << "[TRACE] STATEMENT-GOTO\n";
         nextToken();
+
+        labelsGotoed.insert(curToken.tokenText); // add LABEL that has been gotoed, i.e. the identifier of the LABEL
         match(TokenType::Token::IDENT); // match for identifier after goto, newline inserted at end of statement() function
     }
     else if (checkToken(TokenType::Token::LET)) // "LET" ident "=" expression nl
     {
         std::cout << "[TRACE] STATEMENT-LET\n";
         nextToken();
+
+        if (!(symbols.contains(curToken.tokenText))) // if we see an undefined variable in LET statement
+        {
+            symbols.insert(curToken.tokenText); // add to set
+        }
+
         match(TokenType::Token::IDENT); // match for identifier after LET keyword
         match(TokenType::Token::EQ); // then match for EQ sign 
 
@@ -206,13 +226,29 @@ void Parser::statement()
     }
     else if (checkToken(TokenType::Token::INPUT)) // "INPUT" ident nl
     {
+        /*
+         # "INPUT" ident
+        elif self.checkToken(TokenType.INPUT):
+            self.nextToken()
+
+            #If variable doesn't already exist, declare it.
+            if self.curToken.text not in self.symbols:
+                self.symbols.add(self.curToken.text)
+
+            self.match(TokenType.IDENT)*/
         std::cout << "[TRACE] STATEMENT-INPUT\n";
         nextToken();
+
+        if (!(symbols.contains(curToken.tokenText)))
+        {
+            symbols.insert(curToken.tokenText);
+        }
+
         match(TokenType::Token::IDENT); // match for identifier after INPUT keyword
     }
     else // invalid staement occured somehow, effectively a syntax error
     {
-        abort("Invalid staement at: ", curToken.tokenText, ". Token enum ", curToken.tokenKind);
+        abort("Invalid staement at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
     }
 
     nl(); // output newline
@@ -234,6 +270,15 @@ void Parser::program()
     while (!(checkToken(TokenType::Token::ENDOFFILE)))
     {
         statement();
+    }
+
+    // when parsing is finished, check for undefined variables
+    for (auto itr : labelsGotoed)
+    {
+        if (!(labelsDeclared.contains(itr))) // if LABEL not declared but is trying to be GOTO'ed
+        {
+            abort("Attempting to GOTO an undefined label: ", itr, " ", " "); // empty spaces cuz nothing else to add + abort requires 4 arguments
+        }
     }
 }
 
