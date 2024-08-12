@@ -1,31 +1,39 @@
-#include <iostream> // IO
-#include <cstdlib> // std::exit
-#include <fstream> // open files for cpp
+#include <iostream>  // IO
+#include <cstdlib>   // std::exit
+#include <fstream>   // IO operations for files
 
-#include "lexer.h" // forward-declaration of lexer components
-#include "parser.h" // forward-declaration of parser component
+#include "lexer.h"   // forward-declaration of lexer components
+#include "parser.h"  // forward-declaration of parser component
+#include "emitter.h" // forward-declaration of emitter component
 
-// tester functions below, DO NOT FORGET TO RUN INIT_SOURCE ON OBJECT BEFORE TESTING
-
-// testParser() but with hardcoded file path instead of using command-line argument to supply path
-void testParserNoArgs()
+// test full compiler functionality using emitter to emit C++ file
+void testCompileNoArgs()
 {
     std::string source;
     std::cout << "[INFO] Nubb++ Compiler, starting.\n";
 
     std::ifstream inputFile("code.nubb++"); // open described file from command-line argument
-
     std::string lineContent; 
+    
     while (std::getline(inputFile, lineContent))
     {
-        lineContent += '\n'; // adds newline after extracting line because getline doesn't do it for us :(
+        lineContent += '\n';   // adds newline after extracting line because getline doesn't do it for us :(
         source += lineContent; // append every line to source string to feed to lexer
     }
 
-    Lexer lex { source }; // take source file as std::string
-    lex.init_source(); // append newline to source file then pass to parser
+    inputFile.close(); 
 
-    Parser parse { std::move(lex), Token {"Unknown Token", TokenType::Token::UNKNOWN}, Token {"Unknown Token", TokenType::Token::UNKNOWN} };
+    Lexer lex { source }; // take source file as std::string
+    lex.init_source();    // append newline to source file then pass to parser
+
+    Emitter emit { "out.cpp", "", "" }; // construct emitter with given filename to output as C++ code
+
+    /* 
+    * cannot use std::move(emit) because it will effectively pass EVERYTHING including the fullPath variable, 
+    * which is now inaccessible in the emitter.cpp file and only accessible in parser.cpp
+    */
+
+    Parser parse { std::move(lex), emit, Token {"Unknown Token", TokenType::Token::UNKNOWN}, Token {"Unknown Token", TokenType::Token::UNKNOWN} };
     parse.init(); // call nextToken to initialize curToken and peekToken 
     
     /*
@@ -33,14 +41,24 @@ void testParserNoArgs()
     std::cout << source << '\n';
     */
 
-    parse.program(); // start parsing source
+    parse.program();  // then start parsing source, then writes emitted code by emitter to output file
 
-    std::cout << "[INFO] Parsing complete.";
+    /*
+    
+    Emitter cannot access Parser's copy of its member variables, 
+    so upon calling emit.writeFile, we lose everything.
+
+    Letting the parser do the magic for us works just fine since we can
+    pass the header and code strings back to the emitter anyways, and not break anything :)
+    
+    */
+
+    std::cout << "[INFO] Compiling complete.";
 }
 
-// output parse tree of given source file, uses command-line argument
-void testParser(int argc, char **argv) // argc is ARGUMENT COUNT, num of arguments given, argv is ARGUMENT VECTOR, string of argument given
-{ // must copy function into main with argc, argv parameters to work
+void testCompile(int argc, char **argv)
+{
+    // must copy function into main with argc, argv parameters to work
     std::string source;
     std::cout << "[INFO] Nubb++ Compiler, starting.\n";
 
@@ -52,28 +70,54 @@ void testParser(int argc, char **argv) // argc is ARGUMENT COUNT, num of argumen
     else // source file given
     {
         std::ifstream inputFile(argv[1]); // open described file from command-line argument
-
         std::string lineContent; 
-        while (std::getline(inputFile, lineContent))
+        
+        if (inputFile.is_open())
         {
-            source += lineContent; // append every line to source string to feed to lexer
+            while (std::getline(inputFile, lineContent))
+            {
+                source += lineContent; // append every line to source string to feed to lexer
+            }
+
+            inputFile.close(); 
+        }
+        else
+        {
+            std::cout << "[FATAL] Unable to access file of filepath: " << argv[1];
         }
     }
 
     Lexer lex { source }; // take source file as std::string
     lex.init_source(); // append newline to source file then pass to parser
 
-    Parser parse { std::move(lex), Token {"Unknown Token", TokenType::Token::UNKNOWN}, Token {"Unknown Token", TokenType::Token::UNKNOWN} };
-    parse.init(); // call nextToken to initialize curToken and peekToken 
+    Emitter emit { "out.cpp" }; // construct emitter with given filename to output as C++ code
 
+    /* 
+    * cannot use std::move(emit) because it will effectively pass EVERYTHING including the fullPath variable, 
+    * which is now inaccessible in the emitter.cpp file and only accessible in parser.cpp
+    */
+
+    Parser parse { std::move(lex), emit, Token {"Unknown Token", TokenType::Token::UNKNOWN}, Token {"Unknown Token", TokenType::Token::UNKNOWN} };
+    parse.init(); // call nextToken to initialize curToken and peekToken 
+    
     /*
     Only include for debugging file content before parsing
     std::cout << source << '\n';
     */
 
-    parse.program(); // start parsing source
+    parse.program();  // then start parsing source, then writes emitted code by emitter to output file
 
-    std::cout << "[INFO] Parsing complete.";
+    /*
+    
+    Emitter cannot access Parser's copy of its member variables, 
+    so upon calling emit.writeFile, we lose everything.
+
+    Letting the parser do the magic for us works just fine since we can
+    pass the header and code strings back to the emitter anyways, and not break anything :)
+    
+    */
+
+    std::cout << "[INFO] Compiling complete.";
 }
 
 // tests Lexer token returning ability
@@ -107,7 +151,7 @@ void testCharacterReturn()
 
 int main()
 {
-    testParserNoArgs();
+    testCompileNoArgs();
 
     return 0;
 }

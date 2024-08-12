@@ -1,9 +1,7 @@
-#include <cstdlib> // std::exit
+#include <cstdlib>  // std::exit
 #include <iostream> // IO
-#include <set>
 
-#include "lexer.h" // forward-declaration of lexer componenets
-#include "parser.h" 
+#include "parser.h" // includes forward-declaration of Parser struct, member functions and member variables
 
 // exit on fatal error in parser
 void Parser::abort(std::string_view message, auto optional, std::string_view optional_, auto optional__)
@@ -226,16 +224,6 @@ void Parser::statement()
     }
     else if (checkToken(TokenType::Token::INPUT)) // "INPUT" ident nl
     {
-        /*
-         # "INPUT" ident
-        elif self.checkToken(TokenType.INPUT):
-            self.nextToken()
-
-            #If variable doesn't already exist, declare it.
-            if self.curToken.text not in self.symbols:
-                self.symbols.add(self.curToken.text)
-
-            self.match(TokenType.IDENT)*/
         std::cout << "[TRACE] STATEMENT-INPUT\n";
         nextToken();
 
@@ -257,7 +245,12 @@ void Parser::statement()
 // parse program source, program ::= {statement}
 void Parser::program()
 {
-    std::cout << "[TRACE] PROGRAM\n";
+    std::cout << "[TRACE] PROGRAM: Prepping C++ code file, readying headers...\n";
+
+    // start appending basic includes and main() function to header
+    emit.headerLine("#include <iostream>\n");
+    emit.headerLine("int main()");
+    emit.headerLine("{"); // yes we put the curly brace on the next line, WE ARE NORMAL PEOPLE
 
     // skip ALL newlines at the beginning of source file until valid token/statement/keyword is reached
     // this will let us have comments at the root of our files now
@@ -272,6 +265,11 @@ void Parser::program()
         statement();
     }
 
+    std::cout << "[TRACE] PROGRAM: Finishing up C++ code file, closing main()..\n";
+
+    emit.emitLine("return 0;");
+    emit.emitLine("}");
+
     // when parsing is finished, check for undefined variables
     for (auto itr : labelsGotoed)
     {
@@ -280,6 +278,8 @@ void Parser::program()
             abort("Attempting to GOTO an undefined label: ", itr, " ", " "); // empty spaces cuz nothing else to add + abort requires 4 arguments
         }
     }
+
+    emit.writeFile(emit.code, emit.header); // write emitted code to output file, see test.cpp for why we call writeFile here
 }
 
 // initalizes peekToken and curToken

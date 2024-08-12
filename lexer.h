@@ -1,7 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <string>
+#include <string> // for std::string to convert chars, and for member variables of structs
 
 struct TokenType
 {
@@ -25,33 +25,33 @@ struct TokenType
         REPEAT = 110,
         ENDWHILE = 111,
         // Operators.
-        EQ = 201, // Single Equal '=' 
+        EQ = 201,       // Single Equal '=' 
         PLUS = 202,
         MINUS = 203,
         ASTERISK = 204,
         SLASH = 205,
-        EQEQ = 206, // Double Equal '=='
-        NOTEQ = 207, // Not Equal '!='
-        LT = 208, // Less Than '<'
-        LTEQ = 209, // Less than or Equal To '<='
-        GT = 210, // Greater Than '>'
-        GTEQ = 211, // Greater Than or Equal To '>='
+        EQEQ = 206,     // Double Equal '=='
+        NOTEQ = 207,    // Not Equal '!='
+        LT = 208,       // Less Than '<'
+        LTEQ = 209,     // Less than or Equal To '<='
+        GT = 210,       // Greater Than '>'
+        GTEQ = 211,     // Greater Than or Equal To '>='
         // Unknown Token.
-        UNKNOWN = 300, // default value of token variable in getToken() method
+        UNKNOWN = 300,  // default value of token variable in getToken() method
     };
 };
 
 struct Token
 {
-    std::string tokenText; // empty to start
-    int tokenKind; // unknown token to start
+    std::string tokenText;  // empty to start
+    int tokenKind;          // unknown token to start
 };
 
 struct Lexer
 {
     std::string source;
-    size_t curPos = 0;
-    char curChar = ' ';
+    size_t curPos { 0 };
+    char curChar { ' ' } ;
 
     void init_source();
     TokenType::Token isKeyword(std::string_view tokText);

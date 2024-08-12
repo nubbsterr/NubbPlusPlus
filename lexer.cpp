@@ -11,12 +11,10 @@ To-do/notes:
 
 */
 
-
-#include <string> // for std::string
-#include <cstdlib> // for std::exit
+#include <cstdlib>  // for std::exit
 #include <iostream> // IO
 
-#include "lexer.h" // includes definitions for all structs
+#include "lexer.h"  // includes forward-declaration of lexer componenets
 
 // verify if string in source is identifier or keyword
 TokenType::Token Lexer::isKeyword(std::string_view tokText)
@@ -223,7 +221,7 @@ Token Lexer::getToken()
 
         while (curChar != '\"')
         {
-            if (curChar == '\r' || curChar == '\n' || curChar == '\t' || curChar == '\\' || curChar == '%') // prevent some special characters in string to make Cpp compilation easier
+            if (curChar == '\r' || curChar == '\n' || curChar == '\t' || curChar == '\\' || curChar == '%') // prevent some special characters in string to make C++ compilation easier
             {
                 abort("Illegal character found in string.", " No extra diagnostic info.");
             }
