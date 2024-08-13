@@ -1,3 +1,5 @@
-PRINT "going insane rn"
+PRINT "Hello world," 
+PRINT "Welcome to Nubb++!"
 
-# this will compile totally fine since everything is defined and in scope correctly
+INPUT rating
+PRINT rating

@@ -45,25 +45,22 @@ bool Parser::isComparisonOperator()
     return checkToken(TokenType::Token::GT) || checkToken(TokenType::Token::GTEQ) || checkToken(TokenType::Token::LT) || checkToken(TokenType::Token::LTEQ) || checkToken(TokenType::Token::EQEQ) || checkToken(TokenType::Token::NOTEQ);
 }
 
-// parse for newlines, nl ::= '\n'+
+// nl ::= '\n'+
 void Parser::nl()
 {
-    std::cout << "[TRACE] NEWLINE\n";
-
-    match(TokenType::Token::NEWLINE); // ensure we have a newline with our current statement so it's valid
-    while(checkToken(TokenType::Token::NEWLINE)) // can handle multiple newlines as well, i.e. empty lines after statements
+    match(TokenType::Token::NEWLINE);            // ensure we have a newline with current statement
+    while(checkToken(TokenType::Token::NEWLINE)) // handle newlines until all newlines are parsed
     {
         nextToken();
     }
 }
 
-// parse for identifier or integral type or constant integral literal, primary ::= number | ident
+// primary ::= number | ident
 void Parser::primary()
 {
-    std::cout << "[TRACE] PRIMARY (" << curToken.tokenText << ")\n"; // prints primary trace with text of primary
-
     if (checkToken(TokenType::Token::NUMBER)) // constant literal
     {
+        emit.emit(curToken.tokenText);
         nextToken(); // continue parsing
     }
     else if (checkToken(TokenType::Token::IDENT)) // identifier of integral type
@@ -72,6 +69,8 @@ void Parser::primary()
         {
             abort("Referencing variable before assignment: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
         }
+
+        emit.emit(curToken.tokenText);
         nextToken(); // continue parsing
     }
     else // an unknown value or otherwise non-integral type, abort
@@ -80,115 +79,126 @@ void Parser::primary()
     }
 }
 
-// parse for division/multiplcation operations, term ::= unary {( "/" | "*" ) unary}
+// unary ::= ["+" | "-"] primary
+void Parser::unary()
+{
+    // can have + or - symbol next to integral value/number
+    if (checkToken(TokenType::Token::PLUS) || checkToken(TokenType::Token::MINUS))
+    {
+        emit.emit(curToken.tokenText);
+        nextToken(); // fetch integral value/number after sign
+    }
+
+    primary();
+}
+
+// term ::= unary {( "/" | "*" ) unary}
 void Parser::term()
 {
-    std::cout << "[TRACE] TERM\n";
-
     unary(); // parse for number at beginning of term expression
-    // ensure we have one * or / symbol for valid term expression
+    // ensure we have 0 or more * or / symbol for valid term expression
     while (checkToken(TokenType::Token::ASTERISK) || checkToken(TokenType::Token::SLASH))
     {
+        emit.emit(curToken.tokenText);
         nextToken(); // fetch * or / symbol
         unary(); // then parse for other number in expression
     }
 }
 
-// parse for numbers or identifiers used for mathematical expression, signed positive by default or specified in code,  unary ::= ["+" | "-"] primary
-void Parser::unary()
-{
-    std::cout << "[TRACE] UNARY\n";
-
-    // can have + or - symbol next to integral value/number
-    if (checkToken(TokenType::Token::PLUS) || checkToken(TokenType::Token::MINUS))
-    {
-        nextToken(); // fetch integral value/number after sign
-    }
-    primary();
-}
-
-// parse for expressions, expression ::= term {( "-" | "+" ) term}
+// expression ::= term {( "-" | "+" ) term}
 void Parser::expression()
 {
-    std::cout << "[TRACE] EXPRESSION\n";
-
     term();
     // ensure we have one MINUS or PLUS symbol for valid mathematical expression
     while (checkToken(TokenType::Token::PLUS) || checkToken(TokenType::Token::MINUS))
     {
+        emit.emit(curToken.tokenText);
         nextToken();
         term();
     }
 }
 
-// parse for comparison/boolean statement, comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
+// comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
 void Parser::comparison()
 {
-    std::cout << "[TRACE] COMPARISON\n";
-
     expression(); // parse for expression in comparison
     if (isComparisonOperator()) // see if there is a valid operator for comparison
     {
-        nextToken(); // parse for comparison token
-        expression(); // parse for other expression
+        emit.emit(curToken.tokenText); // emits comparison operators
+        nextToken();                   // parse for comparison token
+        expression();                  // parse for other expression
     }
     else
     {
         abort("Expected comparison at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
     }
+
+    // more than one comparison operator: ==, <=, ...
+    while (isComparisonOperator())
+    {
+        emit.emit(curToken.tokenText);
+        nextToken();
+        expression();
+    }
 }
 
-// parse for statements, statement ::= "PRINT" (expression | string) nl | IF comparison, etc.
+// statement ::= "PRINT" (expression | string) nl | IF comparison, etc.
 void Parser::statement()
 {
-    // evaluate current token to see what statement we're parsing
     if (checkToken(TokenType::Token::PRINT)) // "PRINT" (expression | string) nl
     {
-        std::cout << "[TRACE] STATEMENT-PRINT\n";
-        nextToken(); // see if expression or string is given
-
+        nextToken();                              // see if expression or string is given
         if (checkToken(TokenType::Token::STRING)) // if string is given for PRINT argument
         {
-            nextToken(); // continue to next statement/parse for string
+            // normal print statement with given text
+            emit.emitLine("\tstd::cout << \"" + curToken.tokenText + "\\n" + "\";");
+            nextToken();
         }
         else // expression given otherwise
         {
+            emit.emit("\tstd::cout << static_cast<float>("); // static_cast for floating-point support
             expression();
+            emit.emitLine(");");                           // close expression
         }
     }
     else if (checkToken(TokenType::Token::IF)) // "IF" comparison "THEN" nl {statement} "ENDIF" nl
     {
-        std::cout << "[TRACE] STATEMENT-IF\n";
         nextToken(); 
-        comparison(); // parse for comparison operation for if statement
+        emit.emit("if (");             // comparison goes inside paranthesis
+        comparison();                  // parse for comparison
 
         match(TokenType::Token::THEN); // match for THEN token after comparison
-        nl(); // check for valid newline leading to statements after THEN keyword
+        nl();                          // check for valid newline leading to statements after THEN keyword
+        emit.emitLine(")");
+        emit.emitLine("{");
 
         while (!(checkToken(TokenType::Token::ENDIF))) // zero or more statements in endif
         {
-            statement(); // parse all statements in THEN block before ENDIF
+            statement();                // parse all statements in THEN block before ENDIF
         }
         match(TokenType::Token::ENDIF); // match for ENDIF keyword when no more statements are found in THEN block
+        emit.emitLine("}");             // closing if statement block
     }
     else if (checkToken(TokenType::Token::WHILE)) // "WHILE" comparison "REPEAT" nl {statement} "ENDWHILE" nl
     {
-        std::cout << "[TRACE] STATEMENT-WHILE\n";
         nextToken();
-        comparison(); // parse for comparison then match for REPEAT keyword
+        emit.emit("while (");
+        comparison();                    // parse for comparison then match for REPEAT keyword
 
         match(TokenType::Token::REPEAT); // match for REPEAT keyword after comparison
-        nl(); // newline after REPEAT keyword
+        nl();                            // newline after REPEAT keyword
+        emit.emitLine(")");
+        emit.emitLine("{");
 
         while (!(checkToken(TokenType::Token::ENDWHILE))) // zero or more statements in while-loop body
         {
             statement();
         }
-        match(TokenType::Token::ENDWHILE); // match for ENDWHILE after all statements in while-loop body are parsed
+        match(TokenType::Token::ENDWHILE); // match for ENDWHILE after all statements in while-loop body
+        emit.emitLine("}");                // closing while loop block
     }
     else if (checkToken(TokenType::Token::LABEL)) // "LABEL" ident nl
     {
-        std::cout << "[TRACE] STATEMENT-LABEL\n";
         nextToken();
 
         if (labelsDeclared.contains(curToken.tokenText)) // ensure LABEL given doesn't exist to prevent redefiniton, otherwise add to set
@@ -197,41 +207,78 @@ void Parser::statement()
         }
         labelsDeclared.insert(curToken.tokenText); // add LABEL to set since there's no redefinition
 
-        match(TokenType::Token::IDENT); // match for identifier after label, newline inserted at end of statement() function
+        emit.emitLine(curToken.tokenText + ":"); // statement label for goto
+        match(TokenType::Token::IDENT);          // match for identifier after LABEL
     }
     else if (checkToken(TokenType::Token::GOTO)) // "GOTO" ident nl
     {
-        std::cout << "[TRACE] STATEMENT-GOTO\n";
         nextToken();
-
         labelsGotoed.insert(curToken.tokenText); // add LABEL that has been gotoed, i.e. the identifier of the LABEL
-        match(TokenType::Token::IDENT); // match for identifier after goto, newline inserted at end of statement() function
+        
+        emit.emitLine("goto " + curToken.tokenText + ';');
+        match(TokenType::Token::IDENT);         // match for identifier after GOTO
     }
     else if (checkToken(TokenType::Token::LET)) // "LET" ident "=" expression nl
     {
-        std::cout << "[TRACE] STATEMENT-LET\n";
         nextToken();
 
         if (!(symbols.contains(curToken.tokenText))) // if we see an undefined variable in LET statement
         {
-            symbols.insert(curToken.tokenText); // add to set
+            symbols.insert(curToken.tokenText);      // add to set
+            emit.emit("auto " + curToken.tokenText + " { "); // variable declaration with auto type for type deduction
+
+            match(TokenType::Token::IDENT); // match for identifier after LET keyword
+            match(TokenType::Token::EQ);    // then match for EQ sign 
+
+            expression(); // then parse for expression, will return variable value
+            emit.emitLine(" };"); 
         }
+        else
+        {
+            emit.emit(curToken.tokenText + " = "); // known variable, reference without auto keyword
+            
+            match(TokenType::Token::IDENT); // match for identifier after LET keyword
+            match(TokenType::Token::EQ);    // then match for EQ sign 
 
-        match(TokenType::Token::IDENT); // match for identifier after LET keyword
-        match(TokenType::Token::EQ); // then match for EQ sign 
-
-        expression(); // then parse for expression
+            expression(); // then parse for expression, will return variable value
+            emit.emitLine(";"); 
+        }
     }
     else if (checkToken(TokenType::Token::INPUT)) // "INPUT" ident nl
     {
-        std::cout << "[TRACE] STATEMENT-INPUT\n";
         nextToken();
 
         if (!(symbols.contains(curToken.tokenText)))
         {
             symbols.insert(curToken.tokenText);
+            
+            // must declare at header otherwise it'll look something like: 
+            // std::cin >> float (curToken.text)
+            
+            /* 
+             * Nubb++ has inputs as floats by default, no char or string inputs :(
+             * BASIC has very goofy variable definiton rules and type deduction that
+             * cannot be replicated in C++ without (i imagine) a bunch of function overloading.
+             * 
+             * std::cin is diagnosed for invalid input and cleared on non-integral inputs.
+             */
+            
+            // double by default, can be circumvented by defining variable before input 
+            emit.headerLine("\tfloat " + curToken.tokenText + " {};");
         }
+        // to circumvent std::cin failing on invalid input 
+        // we implement input validation to ever std::cin/INPUT call
+        emit.emitLine("\tstd::cin >> " + curToken.tokenText + ';');
 
+        emit.emitLine("\tif (std::cin.fail()) // invalid input given, crashes std::cin");
+        emit.emitLine("\t{");
+        
+        emit.emitLine("\t\t" + curToken.tokenText + " = -1; // default value on extraction failure"); 
+        emit.emitLine("\t\tstd::cin.clear(); // reset std::cin back to normal mode");
+        emit.emitLine("\t\tstd::cin.ignore(std::numeric_limits<std::streamsize>::max(), \'\\n\'); // clear input buffer up to next newline character ");
+        
+        emit.emitLine("\t}");
+        
         match(TokenType::Token::IDENT); // match for identifier after INPUT keyword
     }
     else // invalid staement occured somehow, effectively a syntax error
@@ -245,12 +292,15 @@ void Parser::statement()
 // parse program source, program ::= {statement}
 void Parser::program()
 {
-    std::cout << "[TRACE] PROGRAM: Prepping C++ code file, readying headers...\n";
+    std::cout << "[INFO] PROGRAM: Prepping C++ source...\n";
 
     // start appending basic includes and main() function to header
-    emit.headerLine("#include <iostream>\n");
+    emit.headerLine("#include <iostream>");
+    emit.headerLine("#include <limits>\n"); // limits for inalid input to clear buffer and reset cin
     emit.headerLine("int main()");
     emit.headerLine("{"); // yes we put the curly brace on the next line, WE ARE NORMAL PEOPLE
+
+    std::cout << "[INFO] PROGRAM: Finished prepping C++ source.\n";
 
     // skip ALL newlines at the beginning of source file until valid token/statement/keyword is reached
     // this will let us have comments at the root of our files now
@@ -265,10 +315,12 @@ void Parser::program()
         statement();
     }
 
-    std::cout << "[TRACE] PROGRAM: Finishing up C++ code file, closing main()..\n";
+    std::cout << "[INFO] PROGRAM: Finishing up C++ code file, closing main()..\n";
 
-    emit.emitLine("return 0;");
+    emit.emitLine("\treturn 0;");
     emit.emitLine("}");
+
+    std::cout << "[INFO] PROGRAM: main() closed. Checking for undefined LABELS...\n";
 
     // when parsing is finished, check for undefined variables
     for (auto itr : labelsGotoed)
@@ -279,6 +331,7 @@ void Parser::program()
         }
     }
 
+    std::cout << "[INFO] PROGRAM: Parsing complete. Writing to C++ source...\n";
     emit.writeFile(emit.code, emit.header); // write emitted code to output file, see test.cpp for why we call writeFile here
 }
 
@@ -287,4 +340,6 @@ void Parser::init()
 {
     nextToken();
     nextToken();
+
+    std::cout << "[INFO] PARSER: Parser initialized. Parsing starting...\n";
 }

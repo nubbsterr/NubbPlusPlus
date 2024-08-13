@@ -50,6 +50,8 @@ void Lexer::init_source()
 {
     source += '\n';
     nextChar();
+
+    std::cout << "[INFO] LEXER: Source initialized.\n";
 }
 
 // used before creating new Token struct on token return in getToken() method, convert char symbols to std::string

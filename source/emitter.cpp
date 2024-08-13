@@ -28,15 +28,17 @@ void Emitter::writeFile(std::string_view _code, std::string_view _header)
     
     if (outFile.is_open())
     {
-        std::cout << "[INFO] Writing to C++ File...\n";
+        std::cout << "[INFO] EMITTER: Writing to C++ File...\n";
 
         outFile << _header; // write headers
         outFile << _code;   // and emitted code to file
         outFile.close();   // close file
+
+        std::cout << "[INFO] EMITTER: Writing complete.\n";
     }
     else
     {
-        std::cerr << "[FATAL] Unable to access file of filepath: " << fullPath << '\n';
+        std::cerr << "[FATAL] EMITTER: Unable to access file of filepath: " << fullPath << '\n';
         std::exit(1); // abort compilation/writing 
     }
 }
