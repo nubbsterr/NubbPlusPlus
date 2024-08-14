@@ -42,7 +42,7 @@ void Parser::match(TokenType::Token tokenKind)
 // return true if current token is a comparison operator like <=, ==, etc. false otherwise
 bool Parser::isComparisonOperator()
 {
-    return checkToken(TokenType::Token::GT) || checkToken(TokenType::Token::GTEQ) || checkToken(TokenType::Token::LT) || checkToken(TokenType::Token::LTEQ) || checkToken(TokenType::Token::EQEQ) || checkToken(TokenType::Token::NOTEQ);
+    return checkToken(TokenType::Token::GT) || checkToken(TokenType::Token::GTEQ) || checkToken(TokenType::Token::LT) || checkToken(TokenType::Token::LTEQ) || checkToken(TokenType::Token::EQEQ) || checkToken(TokenType::Token::NOTEQ) || checkToken(TokenType::Token::OR) || checkToken(TokenType::Token::AND);
 }
 
 // nl ::= '\n'+
@@ -124,9 +124,24 @@ void Parser::comparison()
     expression(); // parse for expression in comparison
     if (isComparisonOperator()) // see if there is a valid operator for comparison
     {
-        emit.emit(curToken.tokenText); // emits comparison operators
-        nextToken();                   // parse for comparison token
-        expression();                  // parse for other expression
+        if (curToken.tokenText == "AND") // logical AND
+        {
+            emit.emit(" && ");
+            nextToken();
+            expression();
+        }
+        else if (curToken.tokenText == "OR") // logical OR
+        {
+            emit.emit(" || ");
+            nextToken();
+            expression();
+        }
+        else // parse for other expression
+        {
+            emit.emit(curToken.tokenText); 
+            nextToken();                   
+            expression();  
+        }                
     }
     else
     {
@@ -151,12 +166,12 @@ void Parser::statement()
         if (checkToken(TokenType::Token::STRING)) // if string is given for PRINT argument
         {
             // normal print statement with given text
-            emit.emitLine("\tstd::cout << \"" + curToken.tokenText + "\\n" + "\";");
+            emit.emitLine("std::cout << \"" + curToken.tokenText + "\\n" + "\";");
             nextToken();
         }
         else // expression given otherwise
         {
-            emit.emit("\tstd::cout << static_cast<float>("); // static_cast for floating-point support
+            emit.emit("std::cout << static_cast<float>("); // static_cast for floating-point support
             expression();
             emit.emitLine(");");                           // close expression
         }
@@ -295,6 +310,7 @@ void Parser::program()
     std::cout << "[INFO] PROGRAM: Prepping C++ source...\n";
 
     // start appending basic includes and main() function to header
+    emit.headerLine("// Thank you for using Nubb++ ❤️\n");
     emit.headerLine("#include <iostream>");
     emit.headerLine("#include <limits>\n"); // limits for inalid input to clear buffer and reset cin
     emit.headerLine("int main()");

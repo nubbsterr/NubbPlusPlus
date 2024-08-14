@@ -36,8 +36,11 @@ struct TokenType
         LTEQ = 209,     // Less than or Equal To '<='
         GT = 210,       // Greater Than '>'
         GTEQ = 211,     // Greater Than or Equal To '>='
+        // Logical Operators.
+        OR = 301,
+        AND = 302,
         // Unknown Token.
-        UNKNOWN = 300,  // default value of token variable in getToken() method
+        UNKNOWN = 400,  // default value of token variable in getToken() method
     };
 };
 

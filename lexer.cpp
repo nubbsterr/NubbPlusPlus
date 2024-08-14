@@ -41,6 +41,10 @@ TokenType::Token Lexer::isKeyword(std::string_view tokText)
         return TokenType::Token::REPEAT;
     else if (tokText == "ENDWHILE")
         return TokenType::Token::ENDWHILE;
+    else if (tokText == "OR")
+        return TokenType::Token::OR;
+    else if (tokText == "AND")
+        return TokenType::Token::AND;
     else
         return TokenType::Token::IDENT; // no keywords match, return identifier token enum
 }
@@ -211,9 +215,9 @@ Token Lexer::getToken()
             nextChar();
             return token;
         }
-        else
+        else // given unexpected logical NOT, not yet supported :(
         {
-            abort("Expected Token NOTEQ or !=, got: !", std::to_string(peekChar()));
+            abort("Expected Token NOTEQ or !=, got: ", std::to_string(peekChar()));
         }
     }
     else if (curChar == '\"') // Quotation mark, strings start with single quotation mark and end with anothe one

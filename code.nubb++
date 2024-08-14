@@ -3,3 +3,16 @@ PRINT "Welcome to Nubb++!"
 
 INPUT rating
 PRINT rating
+
+IF rating OR 0 THEN # should execute print statement
+PRINT "" # newline
+PRINT "Logical operators are now supported!"
+ENDIF # don't forget to close IF like i did and wonder why we get an EOF error :P
+
+
+IF rating AND 1 THEN # should execute
+PRINT ""
+PRINT "AND logical operators work too!"
+ENDIF
+
+# NOT operators are rather tricky to implement so i'll leave them out for now :P

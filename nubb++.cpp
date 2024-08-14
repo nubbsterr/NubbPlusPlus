@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 {
     // must copy function into main with argc, argv parameters to work
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.0\n";
+    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.1\n";
 
     if (argc != 2) // too few arguments, no source file given
     {
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 int main() // no argv version
 {
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.0\n";
+    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.1\n";
 
     std::ifstream inputFile("code.nubb++"); // hard-coded file path in local directory of executable
     std::string lineContent; 
@@ -105,7 +105,7 @@ int main() // no argv version
 void testCompileNoArgs()
 {
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.0\n";
+    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.1\n";
 
     std::ifstream inputFile("code.nubb++"); // hard-coded file path in local directory of executable
     std::string lineContent; 
