@@ -1,6 +1,9 @@
+// Thank you for using Nubb++ ❤️
+// https://github.com/nubbsterr/NubbPlusPlus | https://nubb.pythonanywhere.com
 #include <iostream>  // IO
 #include <cstdlib>   // std::exit
 #include <fstream>   // IO operations for files
+#include <chrono>    // Compile time of compilation from Nubb++ to C++
 
 #include "lexer.h"   // forward-declaration of lexer components
 #include "parser.h"  // forward-declaration of parser component
@@ -11,6 +14,7 @@ int main(int argc, char **argv)
     // must copy function into main with argc, argv parameters to work
     std::string source;
     std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.1\n";
+    auto startCompileTime = std::chrono::high_resolution_clock::now(); // get start time of compilation
 
     if (argc != 2) // too few arguments, no source file given
     {
@@ -64,7 +68,10 @@ int main(int argc, char **argv)
     parse.init();     // call nextToken to initialize curToken and peekToken 
     parse.program();  // then start parsing source, then writes emitted code by emitter to output file
 
-    std::cout << "[INFO] Compiling complete.";
+    auto stopCompileTime = std::chrono::high_resolution_clock::now(); // get stop time of compilation
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stopCompileTime - startCompileTime);
+    
+    std::cout << "[INFO] Compiling complete. [" << duration.count() << "ms]";
     return 0;
 }
 
