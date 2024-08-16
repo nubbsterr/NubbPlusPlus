@@ -32,7 +32,7 @@ void Emitter::writeFile(std::string_view _code, std::string_view _header)
 
         outFile << _header; // write headers
         outFile << _code;   // and emitted code to file
-        outFile.close();   // close file
+        outFile.close();    // close file
 
         std::cout << "[INFO] EMITTER: Writing complete.\n";
     }

@@ -6,7 +6,6 @@ To-do/notes:
 - potentionally change TokenType struct to return string of character, like 'Token.PLUS' rather than 202, would require change of enum to separate logic
 - potentially revamp std::string convertChartoString() to be more performant (std::string creation is expensive)
     - aim to revamp std::string creation performance, remove as many intializations as possible hopefully
-- all double equal (e.g. ==, <=, >=, !=) getToken() calls us hardcoded strings, might revamp but works given testing
 - isKeyword() runs a massive if-else chain, might want to change to for-loop if a method to iterate over enum names is possible
 
 */
@@ -45,6 +44,12 @@ TokenType::Token Lexer::isKeyword(std::string_view tokText)
         return TokenType::Token::OR;
     else if (tokText == "AND")
         return TokenType::Token::AND;
+    else if (tokText == "False")
+        return TokenType::Token::FALSE;
+    else if (tokText == "True")
+        return TokenType::Token::TRUE;
+    else if (tokText == "None")
+        return TokenType::Token::NONE;
     else
         return TokenType::Token::IDENT; // no keywords match, return identifier token enum
 }
@@ -223,7 +228,7 @@ Token Lexer::getToken()
     else if (curChar == '\"') // Quotation mark, strings start with single quotation mark and end with anothe one
     {
         size_t startPosStr = curPos; // mark start of string to later extract
-        nextChar(); // check content of string starting from here
+        nextChar();                  // check content of string starting from here
 
         while (curChar != '\"')
         {
@@ -292,5 +297,5 @@ Token Lexer::getToken()
     else // unknown token
         abort("Unknown token: ", convertChartoString(curChar)); // send additional diagnostic info
 
-    return token; // solely here to satisfy g++
+    return token; // solely here to satisfy g++, will never actually execute since abort() gets called otherwise
 }

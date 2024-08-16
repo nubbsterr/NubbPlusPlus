@@ -55,13 +55,28 @@ void Parser::nl()
     }
 }
 
-// primary ::= number | ident
+// primary ::= number | ident | bool
 void Parser::primary()
 {
     if (checkToken(TokenType::Token::NUMBER)) // constant literal
     {
         emit.emit(curToken.tokenText);
         nextToken(); // continue parsing
+    }
+    else if (checkToken(TokenType::Token::TRUE))
+    {
+        emit.emit("true");
+        nextToken();
+    }
+    else if (checkToken(TokenType::Token::FALSE))
+    {
+        emit.emit("false");
+        nextToken();
+    }
+    else if (checkToken(TokenType::Token::NONE))
+    {
+        emit.emit("NULL");
+        nextToken();
     }
     else if (checkToken(TokenType::Token::IDENT)) // identifier of integral type
     {

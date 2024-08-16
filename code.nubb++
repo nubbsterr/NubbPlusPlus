@@ -1,18 +1,18 @@
+# Nubb++ 1.2 Showcase
+
 PRINT "Hello world," 
-PRINT "Welcome to Nubb++!"
+PRINT "Welcome to Nubb++ 1.2 ❤️"
 
-INPUT rating
-PRINT rating
+# Boolean values are now supported!
 
-IF rating OR 0 THEN # should execute print statement
-PRINT "" # newline
-PRINT "Logical operators are now supported!"
-ENDIF # don't forget to close IF like i did and wonder why we get an EOF error :P
-
-
-IF rating AND 1 THEN # should execute
-PRINT ""
-PRINT "AND logical operators work too!"
+IF True == True THEN 
+PRINT "Boolean values are now supported!"
 ENDIF
 
-# NOT operators are rather tricky to implement so i'll leave them out for now :P
+IF 0 == False THEN
+PRINT "We can even have jank expressions like this!"
+ENDIF
+
+IF 0 == None THEN
+PRINT "We also included the None/NULL keyword!"
+ENDIF

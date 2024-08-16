@@ -1,0 +1,30 @@
+# Nubb++ changelog:
+
+## Nubb++ 1.0 (08/13/2024)
+- IF statements
+- WHILE statements
+- INPUT statements (only for integral values, no string input)
+- Variable declarations with LET keyword
+- Basic arithemtic/expressions
+- GOTO and LABELs 
+- Comments using #/Pound symbol
+
+## Nubb++ 1.1 (08/14/2024)
+- Logical operators (NOT not supported yet, AND/OR supported)
+- Compile time statistic added measured in milliseconds for benchmarking
+
+## Nubb++ 1.2 (08/16/2024)
+- Boolean values (True, False, and None for NULL keyword)
+
+## Nubb++ 1.3 (Near Future)
+- ELIF/ELSE statements
+
+## Nubb++ 1.4 (Near Future)
+- (Unknown at the moment)
+
+## Very far future (TBD)
+- Functions support (void to start, then return types will be added)
+- Static Types (string types included, will run off const char)
+- FOR statements (similar syntax to C++, will require static types)
+- Arrays
+- 

@@ -39,8 +39,12 @@ struct TokenType
         // Logical Operators.
         OR = 301,
         AND = 302,
+        // Boolean Values.
+        TRUE = 401,
+        FALSE = 402,
+        NONE = 403,
         // Unknown Token.
-        UNKNOWN = 400,  // default value of token variable in getToken() method
+        UNKNOWN = 500,  // default value of token variable in getToken() method
     };
 };
 
