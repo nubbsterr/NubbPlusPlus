@@ -34,6 +34,10 @@ TokenType::Token Lexer::isKeyword(std::string_view tokText)
         return TokenType::Token::THEN;
     else if (tokText == "ENDIF")
         return TokenType::Token::ENDIF;
+    else if (tokText == "ELIF")
+        return TokenType::Token::ELIF;
+    else if (tokText == "ELSE")
+        return TokenType::Token::ELSE;
     else if (tokText == "WHILE")
         return TokenType::Token::WHILE;
     else if (tokText == "REPEAT")

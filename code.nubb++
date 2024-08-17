@@ -1,18 +1,21 @@
-# Nubb++ 1.2 Showcase
+# Nubb++ 1.3 Showcase
 
 PRINT "Hello world," 
-PRINT "Welcome to Nubb++ 1.2 ❤️"
+PRINT "Welcome to Nubb++ 1.3 ❤️"
+PRINT ""
 
-# Boolean values are now supported!
 
-IF True == True THEN 
-PRINT "Boolean values are now supported!"
+PRINT "Input a positive number >= 0: "
+INPUT a
+
+IF a == 1 THEN
+PRINT "If/elif/else statements are now all fully supported!"
 ENDIF
 
-IF 0 == False THEN
-PRINT "We can even have jank expressions like this!"
+ELIF a == 1+1 THEN 
+PRINT "We can compare identifiers with arithemtic expressions!"
 ENDIF
 
-IF 0 == None THEN
-PRINT "We also included the None/NULL keyword!"
+ELSE
+PRINT "We can else statements properly as well!"
 ENDIF

@@ -9,11 +9,12 @@
 #include "parser.h"  // forward-declaration of parser component
 #include "emitter.h" // forward-declaration of emitter component
 
+
 int main(int argc, char **argv)
 {
     // must copy function into main with argc, argv parameters to work
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.2\n";
+    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.3\n";
     auto startCompileTime = std::chrono::high_resolution_clock::now(); // get start time of compilation
 
     if (argc != 2) // too few arguments, no source file given
@@ -46,24 +47,7 @@ int main(int argc, char **argv)
     lex.init_source();    // append newline to source file then pass to parser
 
     Emitter emit { "out.cpp" }; // construct emitter with given filename to output as C++ code
-
-    /*
     
-    Emitter cannot access Parser's copy of its member variables, 
-    so upon calling emit.writeFile, we lose everything.
-
-    Letting the parser do the magic for us works just fine since we can
-    pass the header and code strings back to the emitter anyways, and not break anything :)
-    
-    */
-
-    /* 
-     
-    Cannot use std::move(emit) because it will effectively pass EVERYTHING including the fullPath variable, 
-    which is now inaccessible in the emitter.cpp file and only accessible in parser.cpp
-    
-    */
-
     Parser parse { std::move(lex), emit, Token {"Unknown Token", TokenType::Token::UNKNOWN}, Token {"Unknown Token", TokenType::Token::UNKNOWN} };
     parse.init();     // call nextToken to initialize curToken and peekToken 
     parse.program();  // then start parsing source, then writes emitted code by emitter to output file
@@ -82,7 +66,7 @@ int main(int argc, char **argv)
 int main() // no argv version
 {
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.2\n";
+    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.3\n";
 
     std::ifstream inputFile("code.nubb++"); // hard-coded file path in local directory of executable
     std::string lineContent; 
@@ -112,7 +96,7 @@ int main() // no argv version
 void testCompileNoArgs()
 {
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.2\n";
+    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.3\n";
 
     std::ifstream inputFile("code.nubb++"); // hard-coded file path in local directory of executable
     std::string lineContent; 

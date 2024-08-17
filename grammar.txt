@@ -3,6 +3,8 @@
 
 program ::= {statement}
 statement ::= "PRINT" (expression | string) nl
+    | "ELSE" nl {statement} "ENDIF" nl 
+    | "ELIF" comparison "THEN" nl {statement} "ENDIF" nl 
     | "IF" comparison "THEN" nl {statement} "ENDIF" nl
     | "WHILE" comparison "REPEAT" nl {statement} "ENDWHILE" nl
     | "LABEL" ident nl

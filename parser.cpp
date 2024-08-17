@@ -191,8 +191,58 @@ void Parser::statement()
             emit.emitLine(");");                           // close expression
         }
     }
+    else if (checkToken(TokenType::Token::ELSE)) // "ELSE" nl {statement} "ENDIF" nl 
+    {
+        nextToken();
+        emit.emitLine("else");
+        emit.emitLine("{");
+
+        nl();
+
+        // zero or more statements before next ENDIF statement
+        while (!(checkToken(TokenType::Token::ENDIF)))
+        {
+            statement(); // parse all statements in THEN block before next ENDIF
+        }
+        match(TokenType::Token::ENDIF); // match for ENDIF keyword when no more statements are found in THEN block
+        emit.emitLine("}");
+    }
+    else if (checkToken(TokenType::Token::ELIF)) // "ELIF" comparison "THEN" nl {statement} "ENDIF" nl 
+    {
+        nextToken();
+        emit.emit("else if ("); // comparison goes inside paranthesis
+        comparison();           // parse for comparison
+
+        match(TokenType::Token::THEN); // match for THEN token after comparison
+        nl();                          // check for valid newline leading to statements after THEN keyword
+        emit.emitLine(")");
+        emit.emitLine("{");
+
+        // zero or more statements before next ENDIF statement
+        while (!(checkToken(TokenType::Token::ENDIF)))
+        {
+            statement(); // parse all statements in THEN block before ENDIF
+        }
+        
+        match(TokenType::Token::ENDIF); // match for ENDIF keyword when no more statements are found in THEN block
+        emit.emitLine("}");
+    }
     else if (checkToken(TokenType::Token::IF)) // "IF" comparison "THEN" nl {statement} "ENDIF" nl
     {
+
+        /*
+        
+        MASSIVE VULNERABILITIY HERE.
+
+        Nubb++ does NOT check for a valid IF/ELIF/ELSE chain, it only will ever validate that an ENDIF is closing
+        the current IF/ELIF/ELSE statement. So technically, you can have something like ELSE {statement} ENDIF with
+        no beginning IF statement and have valid code in Nubb++ according to the compiler. 
+
+        However, when compiling to machine code, g++ WILL CATCH YOU and you'll have to go back and modify your original
+        Nubb++ file :)
+
+        */
+
         nextToken(); 
         emit.emit("if (");             // comparison goes inside paranthesis
         comparison();                  // parse for comparison
@@ -202,12 +252,14 @@ void Parser::statement()
         emit.emitLine(")");
         emit.emitLine("{");
 
-        while (!(checkToken(TokenType::Token::ENDIF))) // zero or more statements in endif
+        // zero or more statements before next ENDIF statement
+        while (!(checkToken(TokenType::Token::ENDIF)))
         {
-            statement();                // parse all statements in THEN block before ENDIF
+            statement(); // parse all statements in THEN block before ENDIF
         }
+
         match(TokenType::Token::ENDIF); // match for ENDIF keyword when no more statements are found in THEN block
-        emit.emitLine("}");             // closing if statement block
+        emit.emitLine("}");
     }
     else if (checkToken(TokenType::Token::WHILE)) // "WHILE" comparison "REPEAT" nl {statement} "ENDWHILE" nl
     {

@@ -21,9 +21,11 @@ struct TokenType
         IF = 106,
         THEN = 107,
         ENDIF = 108,
-        WHILE = 109,
-        REPEAT = 110,
-        ENDWHILE = 111,
+        ELIF = 109,
+        ELSE = 110,
+        WHILE = 111,
+        REPEAT = 112,
+        ENDWHILE = 113,
         // Operators.
         EQ = 201,       // Single Equal '=' 
         PLUS = 202,
