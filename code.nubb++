@@ -1,21 +1,27 @@
-# Nubb++ 1.3 Showcase
+# Nubb++ 1.4 Showcase
 
 PRINT "Hello world," 
-PRINT "Welcome to Nubb++ 1.3 ❤️"
+PRINT "Welcome to Nubb++ 1.4 ❤️"
 PRINT ""
 
+PRINT "Enter a number: "
+INPUT int num
+PRINT ""
 
-PRINT "Input a positive number >= 0: "
-INPUT a
+LET int otherNum = 3
 
-IF a == 1 THEN
-PRINT "If/elif/else statements are now all fully supported!"
-ENDIF
+PRINT "Enter a string: "
+INPUT string str
+PRINT ""
 
-ELIF a == 1+1 THEN 
-PRINT "We can compare identifiers with arithemtic expressions!"
+LET bool boo = False # booleans work!
+
+IF num+otherNum > 10 THEN
+PRINT str
+PRINT ""
+PRINT "You can print strings to the standard output now too!"
 ENDIF
 
 ELSE
-PRINT "We can else statements properly as well!"
+PRINT "Static types are now supported!"
 ENDIF

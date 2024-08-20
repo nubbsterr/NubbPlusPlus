@@ -15,8 +15,8 @@ To-do/notes:
 
 #include "lexer.h"  // includes forward-declaration of lexer componenets
 
-// verify if string in source is identifier or keyword
-TokenType::Token Lexer::isKeyword(std::string_view tokText)
+// verify if string in source is identifier, keyword, or type
+TokenType::Token Lexer::isKeywordorType(std::string_view tokText)
 {
     if (tokText == "LABEL")
         return TokenType::Token::LABEL;
@@ -54,6 +54,18 @@ TokenType::Token Lexer::isKeyword(std::string_view tokText)
         return TokenType::Token::TRUE;
     else if (tokText == "None")
         return TokenType::Token::NONE;
+    else if (tokText == "int")
+        return TokenType::Token::INT_T;
+    else if (tokText == "float")
+        return TokenType::Token::FLOAT_T;
+    else if (tokText == "double")
+        return TokenType::Token::DOUBLE_T;
+    else if (tokText == "string")
+        return TokenType::Token::STRING_T;
+    else if (tokText == "bool")
+        return TokenType::Token::BOOL_T;
+    else if (tokText == "auto")
+        return TokenType::Token::AUTO_T;
     else
         return TokenType::Token::IDENT; // no keywords match, return identifier token enum
 }
@@ -285,7 +297,7 @@ Token Lexer::getToken()
         }
         // create substring of keyword or identifier, then check if substring is keyword or identifier
         auto subStrToken = std::string(source).substr(startPosStr, (curPos-startPosStr) - 1);
-        auto keyword = Lexer::isKeyword(subStrToken);
+        auto keyword = Lexer::isKeywordorType(subStrToken);
 
         // substr starts from first parameter index then extracts until it reaches (2nd param value) length of characters, not to the index of the second parameter!
         // 2nd param is to the last character in keyword/identifier

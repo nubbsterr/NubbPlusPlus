@@ -45,8 +45,15 @@ struct TokenType
         TRUE = 401,
         FALSE = 402,
         NONE = 403,
+        // Data Types.
+        INT_T = 501,
+        FLOAT_T = 502,
+        DOUBLE_T = 503,
+        STRING_T = 504,
+        BOOL_T = 505,
+        AUTO_T = 506,
         // Unknown Token.
-        UNKNOWN = 500,  // default value of token variable in getToken() method
+        UNKNOWN = 600,  // default value of token variable in getToken() method
     };
 };
 
@@ -63,7 +70,7 @@ struct Lexer
     char curChar { ' ' } ;
 
     void init_source();
-    TokenType::Token isKeyword(std::string_view tokText);
+    TokenType::Token isKeywordorType(std::string_view tokText);
     std::string convertChartoString(char c);
     void nextChar();
     char peekChar();

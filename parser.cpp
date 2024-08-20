@@ -29,6 +29,28 @@ auto Parser::checkPeek(TokenType::Token tokenKind)
     return tokenKind == peekToken.tokenKind;
 }
 
+// affirm that given type for LET statement is valid, abort parsing otherwise
+std::string Parser::matchType()
+{
+    if ((curToken.tokenText == "int") || (curToken.tokenText == "float") || (curToken.tokenText == "double") || (curToken.tokenText == "bool") || (curToken.tokenText == "auto"))
+    {
+        std::string tempType { curToken.tokenText }; // implemented so we can run nextToken() before exiting       
+        nextToken();
+        return tempType;
+    }
+    else if (curToken.tokenText == "string")
+    {    
+        nextToken();
+        return "std::string";
+    }
+    else
+    {
+        abort("LET statement couldn't use type: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+    }
+    
+    return "auto";
+}
+
 // match tokens for valid statements
 void Parser::match(TokenType::Token tokenKind)
 {
@@ -63,20 +85,20 @@ void Parser::primary()
         emit.emit(curToken.tokenText);
         nextToken(); // continue parsing
     }
-    else if (checkToken(TokenType::Token::TRUE))
+    else if (checkToken(TokenType::Token::TRUE)) // boolean literal
     {
         emit.emit("true");
-        nextToken();
+        nextToken(); // continue parsing
     }
-    else if (checkToken(TokenType::Token::FALSE))
+    else if (checkToken(TokenType::Token::FALSE)) // boolean literal
     {
         emit.emit("false");
-        nextToken();
+        nextToken(); // continue parsing
     }
-    else if (checkToken(TokenType::Token::NONE))
+    else if (checkToken(TokenType::Token::NONE))  // boolean literal
     {
         emit.emit("NULL");
-        nextToken();
+        nextToken(); // continue parsing
     }
     else if (checkToken(TokenType::Token::IDENT)) // identifier of integral type
     {
@@ -88,7 +110,12 @@ void Parser::primary()
         emit.emit(curToken.tokenText);
         nextToken(); // continue parsing
     }
-    else // an unknown value or otherwise non-integral type, abort
+    else if (checkToken(TokenType::Token::STRING)) // string literal
+    {
+        emit.emit('\"' + curToken.tokenText + '\"'); // quotation marks cuz without them we have plain text in the output
+        nextToken(); // continue parsing
+    }
+    else // an unknown value of unknown/imaginary type, abort
     {
         abort("Unexpected token at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
     }
@@ -186,9 +213,9 @@ void Parser::statement()
         }
         else // expression given otherwise
         {
-            emit.emit("std::cout << static_cast<float>("); // static_cast for floating-point support
+            emit.emit("std::cout << ");
             expression();
-            emit.emitLine(");");                           // close expression
+            emit.emitLine(";");                           // close expression
         }
     }
     else if (checkToken(TokenType::Token::ELSE)) // "ELSE" nl {statement} "ENDIF" nl 
@@ -300,16 +327,27 @@ void Parser::statement()
         emit.emitLine("goto " + curToken.tokenText + ';');
         match(TokenType::Token::IDENT);         // match for identifier after GOTO
     }
-    else if (checkToken(TokenType::Token::LET)) // "LET" ident "=" expression nl
+    else if (checkToken(TokenType::Token::LET)) // "LET" type ident "=" expression nl
     {
         nextToken();
 
         if (!(symbols.contains(curToken.tokenText))) // if we see an undefined variable in LET statement
         {
-            symbols.insert(curToken.tokenText);      // add to set
-            emit.emit("auto " + curToken.tokenText + " { "); // variable declaration with auto type for type deduction
+            emit.emit(matchType()); // emit type of declared variable
+
+            symbols.insert(curToken.tokenText);          // add undefined variable to set after fetching type
+            emit.emit(" " + curToken.tokenText + " { "); // variable declaration with static type for type deduction
 
             match(TokenType::Token::IDENT); // match for identifier after LET keyword
+
+            /*
+            
+            Nubb++ does NOT yet do any sort of type-checking during parsing. So statements like 
+            LET bool b = 3 CAN get through but WILL CRASH when trying to compile since this syntactically makes
+            no sense and is invalid per language rules.
+            
+            */
+
             match(TokenType::Token::EQ);    // then match for EQ sign 
 
             expression(); // then parse for expression, will return variable value
@@ -326,27 +364,32 @@ void Parser::statement()
             emit.emitLine(";"); 
         }
     }
-    else if (checkToken(TokenType::Token::INPUT)) // "INPUT" ident nl
+    else if (checkToken(TokenType::Token::INPUT)) // "INPUT" (type ident | ident)  nl
     {
         nextToken();
 
         if (!(symbols.contains(curToken.tokenText)))
-        {
-            symbols.insert(curToken.tokenText);
-            
+        {   
             // must declare at header otherwise it'll look something like: 
             // std::cin >> float (curToken.text)
             
             /* 
-             * Nubb++ has inputs as floats by default, no char or string inputs :(
-             * BASIC has very goofy variable definiton rules and type deduction that
-             * cannot be replicated in C++ without (i imagine) a bunch of function overloading.
+             * Nubb++ has requires static type after INPUT statement. If not provided,
+             * parsing will abort.
              * 
-             * std::cin is diagnosed for invalid input and cleared on non-integral inputs.
+             * 
+             * 
+             * std::cin is diagnosed for invalid input and cleared properly as well.
              */
             
-            // double by default, can be circumvented by defining variable before input 
-            emit.headerLine("\tfloat " + curToken.tokenText + " {};");
+            if (curToken.tokenText == "auto") // attempting to use auto type on uninitialized variable declaration
+            {
+                nextToken(); // nextToken() to return variable in question to user so they can debug their dumb mistake
+                abort("Cannot use variable of type 'auto' in INPUT: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+            }
+
+            emit.headerLine(matchType() + " " + curToken.tokenText + " {};"); // emit type of given variable and identifier 
+            symbols.insert(curToken.tokenText); // add undefined variable to set here then,
         }
         // to circumvent std::cin failing on invalid input 
         // we implement input validation to ever std::cin/INPUT call
@@ -365,7 +408,7 @@ void Parser::statement()
     }
     else // invalid staement occured somehow, effectively a syntax error
     {
-        abort("Invalid staement at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+        abort("Invalid statement at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
     }
 
     nl(); // output newline
@@ -379,7 +422,8 @@ void Parser::program()
     // start appending basic includes and main() function to header
     emit.headerLine("// Thank you for using Nubb++ ❤️\n");
     emit.headerLine("#include <iostream>");
-    emit.headerLine("#include <limits>\n"); // limits for inalid input to clear buffer and reset cin
+    emit.headerLine("#include <limits>"); // limits for inalid input to clear buffer and reset cin
+    emit.headerLine("#include <string>\n"); // for string variable usage with static types as of Nubb++ 1.4
     emit.headerLine("int main()");
     emit.headerLine("{"); // yes we put the curly brace on the next line, WE ARE NORMAL PEOPLE
 

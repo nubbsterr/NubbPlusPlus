@@ -21,6 +21,7 @@ struct Parser
     void nextToken();
     auto checkToken(TokenType::Token tokenKind);
     auto checkPeek(TokenType::Token tokenKind);
+    std::string matchType();
     void match(TokenType::Token tokenKind);
     bool isComparisonOperator();
     void nl();

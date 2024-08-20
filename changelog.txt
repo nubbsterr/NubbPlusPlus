@@ -19,12 +19,14 @@
 ## Nubb++ 1.3 (08/17/2024)
 - ELIF/ELSE statements
 
-## Nubb++ 1.4 (Near Future)
-- Static Types (string types included, will run off const char)
-- Revised LET statements with static types
+## Nubb++ 1.4 (08/19/2024)
+- Static Types (int, double, float, string and bool!)
+- Revised LET and INPUT statements with static types (string inputs work now!)
+
+##Nubb++ 1.5 (Near Future)
+- Type casting using custom 'CAST' statement (CAST<type>(ident))
 
 ## Upcoming Features (TBD)
-- Revised INPUT statements with static types (string inputs now!)
 - Functions support (void to start, then return types will be added)
-- FOR statements (similar syntax to C++, will require static types)
+- FOR statements (similar syntax to C++)
 - Arrays

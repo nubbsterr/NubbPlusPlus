@@ -9,8 +9,9 @@ statement ::= "PRINT" (expression | string) nl
     | "WHILE" comparison "REPEAT" nl {statement} "ENDWHILE" nl
     | "LABEL" ident nl
     | "GOTO" ident nl
-    | "LET" ident "=" expression nl
-    | "INPUT" ident nl
+    | "LET" type ident "=" expression nl
+    | "INPUT" (type ident | ident)  nl
+type::= "int" | "float" | "double" | "string" | "bool"
 comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
 expression ::= term {( "-" | "+" ) term}
 term ::= unary {( "/" | "*" ) unary}
