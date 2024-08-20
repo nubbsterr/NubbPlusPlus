@@ -1,0 +1,21 @@
+#!/usr/bin/bash
+
+# This file will both starting the Nubb++ compiler and build the final executable at once by using g++ (The out.cpp file will remain if needed)
+# You will need the nubb.exe compiler executable for this to work tho :P
+# Feel free to make suggestions on improving this script as well, since I'm a massive noob with bash scripting
+
+# I might implement all of this into the compiler by default just so less stuff has to be done but we'll see xD
+
+filename=$1
+
+./nubb++.exe $1
+echo "" # newline
+
+# if script ran successfully then we compile to c++ 
+if [ $? == 0 ]; then
+    g++ -o nubb.out out.cpp
+    echo "[INFO] Nubb++ build finished succesfully."
+else
+    echo "[FATAL] Nubb++ failed to build executable."
+    echo "[FATAL] Given filename to build: $1"
+fi

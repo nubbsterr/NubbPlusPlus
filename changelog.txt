@@ -23,10 +23,15 @@
 - Static Types (int, double, float, string and bool!)
 - Revised LET and INPUT statements with static types (string inputs work now!)
 
+##Nubb++ 1.4.1 (08/20/2024)
+- Official bash script to build Nubb++ source files!
+
 ##Nubb++ 1.5 (Near Future)
 - Type casting using custom 'CAST' statement (CAST<type>(ident))
+- Official bash script to build Nubb++ source files!
 
 ## Upcoming Features (TBD)
 - Functions support (void to start, then return types will be added)
 - FOR statements (similar syntax to C++)
 - Arrays
+- Better error messages (line number/more descriptive messages making suggestions for changes!)
