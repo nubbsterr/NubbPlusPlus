@@ -1,6 +1,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <cstdlib>  // std::exit
+#include <iostream> // IO
+
 #include "lexer.h"   // forward/include lexer so parser can use Lexer object and use its methods
 #include "emitter.h" // forward/include emitter so parser can use Emitter object and its methods
 #include <set>       // to use sets for storing defined variables, labels and goto'ed labels to prevent goto's on undefined labels

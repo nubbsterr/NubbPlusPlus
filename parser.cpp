@@ -1,7 +1,4 @@
-#include <cstdlib>  // std::exit
-#include <iostream> // IO
-
-#include "parser.h" // includes forward-declaration of Parser struct, member functions and member variables
+#include "parser.h"
 
 // exit on fatal error in parser
 void Parser::abort(std::string_view message, auto optional, std::string_view optional_, auto optional__)

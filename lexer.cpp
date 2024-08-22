@@ -1,19 +1,4 @@
-/*
-To-do/notes:
-
-- rework getToken() to use switch-case statement instead of horrendous if-else chain
-    - might result in poor readability, will require professional tip/testing in terms of compilation speed
-- potentionally change TokenType struct to return string of character, like 'Token.PLUS' rather than 202, would require change of enum to separate logic
-- potentially revamp std::string convertChartoString() to be more performant (std::string creation is expensive)
-    - aim to revamp std::string creation performance, remove as many intializations as possible hopefully
-- isKeyword() runs a massive if-else chain, might want to change to for-loop if a method to iterate over enum names is possible
-
-*/
-
-#include <cstdlib>  // for std::exit
-#include <iostream> // IO
-
-#include "lexer.h"  // includes forward-declaration of lexer componenets
+#include "lexer.h"
 
 // verify if string in source is identifier, keyword, or type
 TokenType::Token Lexer::isKeywordorType(std::string_view tokText)

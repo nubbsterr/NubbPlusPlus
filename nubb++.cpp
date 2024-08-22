@@ -2,7 +2,7 @@
 // https://github.com/nubbsterr/NubbPlusPlus | https://nubb.pythonanywhere.com
 #include <iostream>  // IO
 #include <cstdlib>   // std::exit
-#include <fstream>   // IO operations for files
+#include <fstream>   // file IO operations 
 #include <chrono>    // Compile time of compilation from Nubb++ to C++
 
 #include "lexer.h"   // forward-declaration of lexer components
@@ -40,6 +40,7 @@ int main(int argc, char **argv)
         else
         {
             std::cout << "[FATAL] PRE-COMPILE: Unable to access file of filepath: " << argv[1];
+            std::exit(1); 
         }
     }
 
@@ -59,11 +60,9 @@ int main(int argc, char **argv)
     return 0;
 }
 
-// Below are a bunch of extra test functions for the compiler, feel free to try them out as you wish :)
-
 /*
 
-int main() // no argv version
+int main() // no argv version (for testing only)
 {
     std::string source;
     std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.4\n";
@@ -90,64 +89,6 @@ int main() // no argv version
 
     std::cout << "[INFO] Compiling complete.";
     return 0;
-}
-
-// test full compiler functionality using emitter to emit C++ file
-void testCompileNoArgs()
-{
-    std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.4\n";
-
-    std::ifstream inputFile("code.nubb++"); // hard-coded file path in local directory of executable
-    std::string lineContent; 
-    
-    while (std::getline(inputFile, lineContent))
-    {
-        lineContent += '\n';   // adds newline after extracting line because getline doesn't do it for us :(
-        source += lineContent; // append every line to source string to feed to lexer
-    }
-
-    inputFile.close(); 
-
-    Lexer lex { source }; // take source file as std::string
-    lex.init_source();    // append newline to source file then pass to parser
-
-    Emitter emit { "out.cpp", "", "" }; // construct emitter with given filename to output as C++ code
-
-    Parser parse { std::move(lex), emit, Token {"Unknown Token", TokenType::Token::UNKNOWN}, Token {"Unknown Token", TokenType::Token::UNKNOWN} };
-    parse.init();     // call nextToken to initialize curToken and peekToken 
-    parse.program();  // then start parsing source, then writes emitted code by emitter to output file
-
-    std::cout << "[INFO] Compiling complete.";
-}
-
-// tests Lexer token returning ability
-void testGetToken() 
-{
-    Lexer lex {"LET a = 1 # a = 1"};
-    lex.init_source(); 
-    auto token = lex.getToken();
-
-    while (token.tokenKind != TokenType::Token::ENDOFFILE)
-    {
-        std::cout << "[TRACE] Token Enum " << token.tokenKind << ": " << token.tokenText << '\n';
-        token = lex.getToken(); // rinse and repeat getting token
-    }
-    std::cout << "[INFO] Finished lexing";
-}
-
-// tests Lexer to return character in source file string until EOF is reached
-void testCharacterReturn()
-{
-    Lexer lex { "FOOBAR = 123" };
-    lex.init_source();
-
-    while (lex.peekChar() != '\0') // haven't reached null terminator/EOF
-    {
-        std::cout << lex.curChar << '\n'; // print current character spotted
-        lex.nextChar();
-    }
-    std::cout << "[INFO] Finished lexing";
 }
 
 */

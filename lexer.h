@@ -2,6 +2,8 @@
 #define LEXER_H
 
 #include <string> // for std::string to convert chars, and for member variables of structs
+#include <cstdlib>  // for std::exit
+#include <iostream> // IO
 
 struct TokenType
 {
