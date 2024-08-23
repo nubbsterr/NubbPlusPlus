@@ -1,27 +1,13 @@
-# Nubb++ 1.4 Showcase
+# Nubb++ 1.5 Showcase
 
 PRINT "Hello world," 
-PRINT "Welcome to Nubb++ 1.4 ❤️"
+PRINT "Welcome to Nubb++ 1.5 ❤️"
 PRINT ""
 
 PRINT "Enter a number: "
 INPUT int num
 PRINT ""
 
-LET int otherNum = 3
-
-PRINT "Enter a string: "
-INPUT string str
-PRINT ""
-
-LET bool boo = False # booleans work!
-
-IF num+otherNum > 10 THEN
-PRINT str
-PRINT ""
-PRINT "You can print strings to the standard output now too!"
-ENDIF
-
-ELSE
-PRINT "Static types are now supported!"
-ENDIF
+CAST num = double
+PRINT "Type casting is now supported!"
+PRINT "IF statements were also fixed! See changelog for info c:"

@@ -13,6 +13,8 @@ TokenType::Token Lexer::isKeywordorType(std::string_view tokText)
         return TokenType::Token::INPUT;
     else if (tokText == "LET")
         return TokenType::Token::LET;
+    else if (tokText == "CAST")
+        return TokenType::Token::CAST;
     else if (tokText == "IF")
         return TokenType::Token::IF;
     else if (tokText == "THEN")

@@ -26,7 +26,7 @@ auto Parser::checkPeek(TokenType::Token tokenKind)
     return tokenKind == peekToken.tokenKind;
 }
 
-// affirm that given type for LET statement is valid, abort parsing otherwise
+// affirm that given type for LET or CAST statement is valid, abort parsing otherwise
 std::string Parser::matchType()
 {
     if ((curToken.tokenText == "int") || (curToken.tokenText == "float") || (curToken.tokenText == "double") || (curToken.tokenText == "bool") || (curToken.tokenText == "auto"))
@@ -42,13 +42,13 @@ std::string Parser::matchType()
     }
     else
     {
-        abort("LET statement couldn't use type: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+        abort("LET or CAST statement couldn't use type: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
     }
     
     return "auto";
 }
 
-// match tokens for valid statements
+// match tokens in statements with source file, abort if token is invalid or otherwise not present
 void Parser::match(TokenType::Token tokenKind)
 {
     if (!(checkToken(tokenKind)))
@@ -217,6 +217,9 @@ void Parser::statement()
     }
     else if (checkToken(TokenType::Token::ELSE)) // "ELSE" nl {statement} "ENDIF" nl 
     {
+        if (hasTrailingIf == false)
+            abort ("Cannot have ELSE statement ", "without trailing ", "IF statement", ".");
+
         nextToken();
         emit.emitLine("else");
         emit.emitLine("{");
@@ -230,9 +233,14 @@ void Parser::statement()
         }
         match(TokenType::Token::ENDIF); // match for ENDIF keyword when no more statements are found in THEN block
         emit.emitLine("}");
+
+        hasTrailingIf = false; // prevent another ELIF or ELSE after current ELSE statement
     }
     else if (checkToken(TokenType::Token::ELIF)) // "ELIF" comparison "THEN" nl {statement} "ENDIF" nl 
     {
+        if (hasTrailingIf == false)
+            abort ("Cannot have ELIF statement ", "without trailing ", "IF statement", ".");
+
         nextToken();
         emit.emit("else if ("); // comparison goes inside paranthesis
         comparison();           // parse for comparison
@@ -253,20 +261,6 @@ void Parser::statement()
     }
     else if (checkToken(TokenType::Token::IF)) // "IF" comparison "THEN" nl {statement} "ENDIF" nl
     {
-
-        /*
-        
-        MASSIVE VULNERABILITIY HERE.
-
-        Nubb++ does NOT check for a valid IF/ELIF/ELSE chain, it only will ever validate that an ENDIF is closing
-        the current IF/ELIF/ELSE statement. So technically, you can have something like ELSE {statement} ENDIF with
-        no beginning IF statement and have valid code in Nubb++ according to the compiler. 
-
-        However, when compiling to machine code, g++ WILL CATCH YOU and you'll have to go back and modify your original
-        Nubb++ file :)
-
-        */
-
         nextToken(); 
         emit.emit("if (");             // comparison goes inside paranthesis
         comparison();                  // parse for comparison
@@ -284,6 +278,8 @@ void Parser::statement()
 
         match(TokenType::Token::ENDIF); // match for ENDIF keyword when no more statements are found in THEN block
         emit.emitLine("}");
+
+        hasTrailingIf = true;
     }
     else if (checkToken(TokenType::Token::WHILE)) // "WHILE" comparison "REPEAT" nl {statement} "ENDWHILE" nl
     {
@@ -341,7 +337,7 @@ void Parser::statement()
             
             Nubb++ does NOT yet do any sort of type-checking during parsing. So statements like 
             LET bool b = 3 CAN get through but WILL CRASH when trying to compile since this syntactically makes
-            no sense and is invalid per language rules.
+            no sense and is invalid per C++ rules.
             
             */
 
@@ -360,6 +356,27 @@ void Parser::statement()
             expression(); // then parse for expression, will return variable value
             emit.emitLine(";"); 
         }
+    }
+    else if (checkToken(TokenType::Token::CAST)) // "CAST" ident = type
+    {
+        nextToken(); // go to ident
+
+        if (!(symbols.contains(curToken.tokenText))) // identifier to cast isn't defined
+            abort("Cannot cast undefined identifier: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+
+        std::string cast_ident { curToken.tokenText }; // save cast identifier to check validity later
+        
+        nextToken();                                   // continue parsing since we've verified there is an identifier to cast
+        match(TokenType::Token::EQ);                   // match for equal sign before type
+        
+        emit.emit("static_cast<");
+        std::string cast_type { matchType() };         // get type to cast identifier to
+
+        if (cast_type == "auto") // cannot use 'auto' for type casting
+            abort("Cannot case identifier to type: ", cast_type, "Illegal use of type: ", cast_type);
+
+        emit.emitLine(cast_type + ">(" + cast_ident + ");"); // emit rest of CAST statement
+
     }
     else if (checkToken(TokenType::Token::INPUT)) // "INPUT" (type ident | ident)  nl
     {

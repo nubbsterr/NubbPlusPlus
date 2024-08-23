@@ -15,6 +15,8 @@ struct Parser
 
     Token peekToken;
     Token curToken;
+
+    bool hasTrailingIf { false };           // verify that an IF statement is present before any given ELIF or ELSE
     
     std::set<std::string>symbols {};        // declared variables so far
     std::set<std::string>labelsDeclared {}; // labels declared so far (so we can't goto an undefined label)

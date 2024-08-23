@@ -30,8 +30,10 @@
 - More comments in nubb++build to help people c:
 - Fixed missing std::exit() call in compiler build
 
-##Nubb++ 1.5 (Near Future)
-- Type casting using custom 'CAST' statement (CAST<type>(ident))
+##Nubb++ 1.5 (08/23/2024)
+- Type casting using custom 'CAST' statement (CAST ident: type)
+- Type casting does NOT handle semantic errors, like casting a string to an int and vice-versa, getting type of cast ident. is too bothersome
+- Added boolean hasTrailingIf to Parser component to verify IF statement structure, prevent illegal C++ syntax
 
 ## Upcoming Features (TBD)
 - Functions support (void to start, then return types will be added)
