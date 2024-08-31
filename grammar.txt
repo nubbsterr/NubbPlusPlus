@@ -6,15 +6,16 @@ statement ::= "PRINT" (expression | string) nl
     | "ELSE" nl {statement} "ENDIF" nl 
     | "ELIF" comparison "THEN" nl {statement} "ENDIF" nl 
     | "IF" comparison "THEN" nl {statement} "ENDIF" nl
+    | "FOR" ident ":" comparison ":" expression "THEN" nl {statement} "ENDFOR" nl
     | "WHILE" comparison "REPEAT" nl {statement} "ENDWHILE" nl
     | "LABEL" ident nl
     | "GOTO" ident nl
     | "LET" type ident "=" expression nl
-    | "CAST" ident = type
+    | "CAST" ident: type
     | "INPUT" (type ident | ident)  nl
 type::= "int" | "float" | "double" | "string" | "bool"
 comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
-expression ::= term {( "-" | "+" ) term}
+expression ::= term {( "-" | "+" | "-=" | "+-" ) term} | term ( "++" | "--")
 term ::= unary {( "/" | "*" ) unary}
 unary ::= ["+" | "-"] primary
 primary ::= number | ident | bool

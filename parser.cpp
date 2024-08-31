@@ -42,7 +42,7 @@ std::string Parser::matchType()
     }
     else
     {
-        abort("LET or CAST statement couldn't use type: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+        abort("LET, FOR, or CAST statement couldn't use type: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
     }
     
     return "auto";
@@ -144,16 +144,23 @@ void Parser::term()
     }
 }
 
-// expression ::= term {( "-" | "+" ) term}
+// expression ::= term {( "-" | "+" | "-=" | "+-" ) term} | term ( "++" | "--")
 void Parser::expression()
 {
     term();
     // ensure we have one MINUS or PLUS symbol for valid mathematical expression
-    while (checkToken(TokenType::Token::PLUS) || checkToken(TokenType::Token::MINUS))
+    while (checkToken(TokenType::Token::PLUS) || checkToken(TokenType::Token::MINUS) || checkToken(TokenType::Token::PLUSEQ) || checkToken(TokenType::Token::MINUSEQ))
     {
         emit.emit(curToken.tokenText);
         nextToken();
         term();
+    }
+
+    // Handle ++ or -- expressions with a single term/identifier
+    if (checkToken(TokenType::Token::PLUSPLUS) || checkToken(TokenType::Token::MINUSMINUS))
+    {
+        emit.emit(curToken.tokenText);
+        nextToken();
     }
 }
 
@@ -299,6 +306,66 @@ void Parser::statement()
         match(TokenType::Token::ENDWHILE); // match for ENDWHILE after all statements in while-loop body
         emit.emitLine("}");                // closing while loop block
     }
+    else if (checkToken(TokenType::Token::FOR)) // "FOR" ident ":" comparison ":" expression "THEN" nl {statement} "ENDFOR" nl
+    {
+        nextToken();
+        emit.emit("for (");
+
+        /*
+        
+        FOR statements do NOT allow global/static variables previously defined to be used. Everything must
+        be defined within the scope of the FOR statement.
+
+        e.g. 'FOR a: a <= 10: a++ THEN' will not execute since no type can be found for the identifier.
+        You'd have to change it to something like 'FOR int a: a <= 10: a++' for the FOR statement to compile.
+
+        This can be fixed by creating a new Variable struct/class system where we verify types of variables, so that previously defined
+        variables can be recognized and evaluated properly (i.e. deemed legal/illegal for the FOR statement).
+        */
+
+        // FOR loops only support integral identifiers, no string loops :P
+        // This emits the type of the iterator variable, since matchType calls nextToken, we emit here so we don't skip the type
+        emit.emit(curToken.tokenText);
+
+        if ((matchType() == "int") || (matchType() == "float") || (matchType() == "double"))
+        {
+            emit.emit(" " + curToken.tokenText + "; ");
+        }
+        else 
+        {
+            abort("Illegal use of type: \'", curToken.tokenText, "\' in FOR statement", ".");
+        }
+
+        // temporarily add FOR statement identifier so parser can use local variable in FOR statement
+        // otherwise parser will freak out since it doesn't understand local scope
+        std::string localForIterator { curToken.tokenText };
+        symbols.insert(localForIterator);
+            
+        nextToken(); 
+        nextToken(); // skip semi-colon after init-statement/ident
+
+        comparison();
+        emit.emit(";");     // emit semi-colon after condition
+
+        nextToken();        // skip semi-colon after comparison/condition
+
+        expression();
+        emit.emitLine(")"); // close FOR statement after end-expression parsed
+
+        match(TokenType::Token::THEN); 
+        nl();               // match for newline when FOR statement is closed
+        emit.emitLine("{");
+
+        // parse all statements until ENDFOR found
+        while (!(checkToken(TokenType::Token::ENDFOR)))
+        {
+            statement();
+        }
+
+        match(TokenType::Token::ENDFOR);    // match for ENDFOR after statements are parsed
+        symbols.erase(localForIterator);    // erase local FOR identifier 
+        emit.emitLine("}");                 // close FOR statement
+    }
     else if (checkToken(TokenType::Token::LABEL)) // "LABEL" ident nl
     {
         nextToken();
@@ -357,7 +424,7 @@ void Parser::statement()
             emit.emitLine(";"); 
         }
     }
-    else if (checkToken(TokenType::Token::CAST)) // "CAST" ident = type
+    else if (checkToken(TokenType::Token::CAST)) // "CAST" ident: type
     {
         nextToken(); // go to ident
 
@@ -367,7 +434,7 @@ void Parser::statement()
         std::string cast_ident { curToken.tokenText }; // save cast identifier to check validity later
         
         nextToken();                                   // continue parsing since we've verified there is an identifier to cast
-        match(TokenType::Token::EQ);                   // match for equal sign before type
+        match(TokenType::Token::COLON);                // match for colon before type
         
         emit.emit("static_cast<");
         std::string cast_type { matchType() };         // get type to cast identifier to

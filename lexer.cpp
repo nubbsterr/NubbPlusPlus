@@ -31,6 +31,10 @@ TokenType::Token Lexer::isKeywordorType(std::string_view tokText)
         return TokenType::Token::REPEAT;
     else if (tokText == "ENDWHILE")
         return TokenType::Token::ENDWHILE;
+    else if (tokText == "FOR")
+        return TokenType::Token::FOR;
+    else if (tokText == "ENDFOR")
+        return TokenType::Token::ENDFOR;
     else if (tokText == "OR")
         return TokenType::Token::OR;
     else if (tokText == "AND")
@@ -128,21 +132,55 @@ void Lexer::skipComments()
 // retrieve and return tokens in source to parser/user
 Token Lexer::getToken()
 {
-    skipWhitespace(); // to prevent getToken() from seeing whitespace and erroring out
-    skipComments(); // skip comments/pound symbol to prevent errors in getToken()
-    auto token = Token {"Unknown Token", TokenType::Token::UNKNOWN}; // basically undefined token, returned only if an unknown token is found
+    skipWhitespace(); 
+    skipComments(); 
+    auto token = Token {"Unknown Token", TokenType::Token::UNKNOWN}; // dummy token made to satisfy compiler
 
     if (curChar == '+') // PLUS token
     {
-        auto token = Token {convertChartoString(curChar), TokenType::Token::PLUS}; // effectively returns the token character and the type of token
-        nextChar(); // keep moving through source string
-        return token;
+        if (peekChar() == '=')
+        {
+            nextChar();
+            auto token = Token {"+=", TokenType::Token::PLUSEQ};
+            nextChar();
+            return token;
+        }
+        else if (peekChar() == '+')
+        {
+            nextChar();
+            auto token = Token {"++", TokenType::Token::PLUSPLUS};
+            nextChar();
+            return token;
+        }
+        else
+        {
+            auto token = Token {convertChartoString(curChar), TokenType::Token::PLUS}; // effectively returns the token character and the type of token
+            nextChar(); // keep moving through source string
+            return token;
+        }
     }
     else if (curChar == '-') // MINUS token
     {
-        auto token = Token {convertChartoString(curChar), TokenType::Token::MINUS};
-        nextChar(); // keep moving through source string
-        return token;
+        if (peekChar() == '=')
+        {
+            nextChar();
+            auto token = Token {"-=", TokenType::Token::MINUSEQ};
+            nextChar();
+            return token;
+        }
+        else if (peekChar() == '-')
+        {
+            nextChar();
+            auto token = Token {"--", TokenType::Token::MINUSMINUS};
+            nextChar();
+            return token;
+        }
+        else
+        {
+            auto token = Token {convertChartoString(curChar), TokenType::Token::MINUS}; // effectively returns the token character and the type of token
+            nextChar(); // keep moving through source string
+            return token;
+        }
     }
     else if (curChar == '/') // SLASH token
     {
@@ -273,6 +311,12 @@ Token Lexer::getToken()
         auto token = Token {std::string(source).substr(startPosStr, (curPos-startPosStr)), TokenType::Token::NUMBER}; 
         nextChar(); // continue to next character to avoid checking another number and aborting
         return token;
+    }
+    else if (curChar == ':')
+    {
+        auto token = Token {convertChartoString(curChar), TokenType::Token::COLON};
+        nextChar();
+        return token; 
     }
     else if (isalpha(curChar)) // next string of character might be an identifier or keyword
     {

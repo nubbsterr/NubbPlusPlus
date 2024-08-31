@@ -9,12 +9,11 @@
 #include "parser.h"  // forward-declaration of parser component
 #include "emitter.h" // forward-declaration of emitter component
 
-
 int main(int argc, char **argv)
 {
     // must copy function into main with argc, argv parameters to work
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.5\n";
+    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.6\n";
     auto startCompileTime = std::chrono::high_resolution_clock::now(); // get start time of compilation
 
     if (argc != 2) // too few arguments, no source file given
@@ -65,7 +64,7 @@ int main(int argc, char **argv)
 int main() // no argv version (for testing only)
 {
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.5\n";
+    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 1.6\n";
 
     std::ifstream inputFile("code.nubb++"); // hard-coded file path in local directory of executable
     std::string lineContent; 

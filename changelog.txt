@@ -35,8 +35,20 @@
 - Type casting does NOT handle semantic errors, like casting a string to an int and vice-versa, getting type of cast ident. is too bothersome
 - Added boolean hasTrailingIf to Parser component to verify IF statement structure, prevent illegal C++ syntax
 
+##Nubb++ 1.6 (08/day/2024)
+- FOR statements (similar syntax to C++) 
+    - Limited only to integral types, no strings since strings cannot be indexed in Nubb++, and probably will never be available since that'd be too advanced for a dummy language like this
+- Implemented '++', '--', '+=', and '-=' operators for better expressions support.
+- Adjusted CAST statement syntax to use 'colon'/; rather than equal sign (see grammar.txt)
+
 ## Upcoming Features (TBD)
+- Refactor literally everything (primarly booleans since in the parse tree their next to numbers which makes no sense)
+- NOT operator implementation
 - Functions support (void to start, then return types will be added)
-- FOR statements (similar syntax to C++)
 - Arrays
 - Better error messages (line number/more descriptive messages making suggestions for changes!)
+
+## Potential Features (TBD, Slight chance to not be implemented)
+- AST/Astract Syntax Tree Representation (requires research since I have no clue what this is)
+- Syntax highlighting in VSC 
+- FUll language installer built on Python Tkinter or C++ (install most recent compiler build from repo + bin command using nubb++build bash script)

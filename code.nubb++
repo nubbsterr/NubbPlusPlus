@@ -1,13 +1,16 @@
-# Nubb++ 1.5 Showcase
+# Nubb++ 1.6 Showcase
 
 PRINT "Hello world," 
-PRINT "Welcome to Nubb++ 1.5 ❤️"
+PRINT "Welcome to Nubb++ 1.6 ❤️"
 PRINT ""
 
-PRINT "Enter a number: "
-INPUT int num
-PRINT ""
+LET int iter = 0
 
-CAST num = double
-PRINT "Type casting is now supported!"
-PRINT "IF statements were also fixed! See changelog for info c:"
+FOR int iter: iter <= 10: iter++ THEN
+PRINT iter
+PRINT "" # newline
+ENDFOR
+
+PRINT "FOR statements are now supported!"
+PRINT "Loads of extra stuff were implemented as well! See changelog for info c:"
+PRINT "There are some missing features with FOR loops, see lines 314-324 in parser.cpp"

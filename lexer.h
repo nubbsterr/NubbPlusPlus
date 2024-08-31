@@ -29,18 +29,24 @@ struct TokenType
         WHILE = 112,
         REPEAT = 113,
         ENDWHILE = 114,
+        FOR = 115,
+        ENDFOR = 116,
         // Operators.
         EQ = 201,       // Single Equal '=' 
         PLUS = 202,
-        MINUS = 203,
-        ASTERISK = 204,
-        SLASH = 205,
-        EQEQ = 206,     // Double Equal '=='
-        NOTEQ = 207,    // Not Equal '!='
-        LT = 208,       // Less Than '<'
-        LTEQ = 209,     // Less than or Equal To '<='
-        GT = 210,       // Greater Than '>'
-        GTEQ = 211,     // Greater Than or Equal To '>='
+        PLUSPLUS = 203,
+        PLUSEQ = 204,
+        MINUS = 205,
+        MINUSMINUS = 206,
+        MINUSEQ = 207, 
+        ASTERISK = 208,
+        SLASH = 209,
+        EQEQ = 210,     // Double Equal '=='
+        NOTEQ = 211,    // Not Equal '!='
+        LT = 212,       // Less Than '<'
+        LTEQ = 213,     // Less than or Equal To '<='
+        GT = 214,       // Greater Than '>'
+        GTEQ = 215,     // Greater Than or Equal To '>='
         // Logical Operators.
         OR = 301,
         AND = 302,
@@ -55,8 +61,10 @@ struct TokenType
         STRING_T = 504,
         BOOL_T = 505,
         AUTO_T = 506,
+        // Miscellaneous.
+        COLON = 601,
         // Unknown Token.
-        UNKNOWN = 600,  // default value of token variable in getToken() method
+        UNKNOWN = 700,  // default value of token variable in getToken() method
     };
 };
 
