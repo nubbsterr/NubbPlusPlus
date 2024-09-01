@@ -1,27 +1,27 @@
 #include "emitter.h"
 
-// append fragment of code to std::string code
+// Append fragment of code from Parser to std::string code
 void Emitter::emit(std::string_view fragement_code) 
 {
     code += fragement_code; 
 }
 
-// append fragment of code and newline to std::string code
+// Append fragment of code from Parser with a newline to std::string code
 void Emitter::emitLine(std::string_view fragement_code) 
 {
     code += fragement_code;
     code += '\n';
 }
 
-// append fragment of code to root of C++ file -- include headers and main() function
+// Append fragment of code to root of C++ file
 void Emitter::headerLine(std::string_view fragment_code) 
 {
     header += fragment_code;
     header += '\n'; 
 }
 
-// write C++ code to file, called in parser.cpp since Emitter member variables are not shared between structs
-// takes emit.code and emit.header variables from Parser
+
+// Write C++ code provided by Parser to output file
 void Emitter::writeFile(std::string_view _code, std::string_view _header) 
 { 
     std::ofstream outFile(fullPath); // write to file of specified path given
@@ -38,7 +38,7 @@ void Emitter::writeFile(std::string_view _code, std::string_view _header)
     }
     else
     {
-        std::cerr << "[FATAL] EMITTER: Unable to access file of filepath: " << fullPath << '\n';
-        std::exit(1); // abort compilation/writing 
+        std::cerr << "[FATAL] EMITTER: Couldn't access file of filepath: " << fullPath << '\n';
+        std::exit(1);
     }
 }

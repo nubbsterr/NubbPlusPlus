@@ -70,7 +70,7 @@ void Lexer::init_source()
     std::cout << "[INFO] LEXER: Source initialized.\n";
 }
 
-// used before creating new Token struct on token return in getToken() method, convert char symbols to std::string
+// Used before creating new Token struct on token return in getToken() method, convert char symbols to std::string
 std::string Lexer::convertChartoString(char c) 
 {
     std::string str {c};
@@ -80,9 +80,9 @@ std::string Lexer::convertChartoString(char c)
 // find next character in source, stop search on EOF
 void Lexer::nextChar()
 {
-    if ((static_cast<int>(curPos)) >= static_cast<int>(source.length())) // reached end of source or about to exceed bounds
+    if ((static_cast<int>(curPos)) >= static_cast<int>(source.length())) // Reached end of source or about to exceed bounds
     {
-        curChar = '\0'; // EOF reached
+        curChar = '\0'; 
     }
     else
     {
@@ -91,57 +91,58 @@ void Lexer::nextChar()
     }
 }
 
-// peek for next character for multi-symbol tokens like >=, <=, etc.
+// Peek for next character for multi-chaacter tokens
 char Lexer::peekChar()
 {
-    if (((static_cast<int>(curPos)) + 1) > static_cast<int>(source.length())) // reached end of source or about to exceed bounds
+    if (((static_cast<int>(curPos)) + 1) > static_cast<int>(source.length())) // Reached end of source or about to exceed bounds
     {
         return '\0';
     }
     return source[curPos]; 
 }
 
-// exit on fatal error in lexer
-void Lexer::abort(std::string_view message, std::string_view optional)
+// Exit on fatal error in Lexing process
+void Lexer::abort(std::string_view message)
 {
-    std::cout << "[FATAL] Lexing error. " << message << optional << '\n';
+    std::cout << "[FATAL] Lexing error. " << message << '\n';
     std::exit(1); 
 }
 
-// skip whitespace while searching source
+// Skip whitespace while searching source
 void Lexer::skipWhitespace()
 {
-    while (curChar == ' ' || curChar == '\t' || curChar == '\r') // all forms of whitespace chars + carriage return
+    while (curChar == ' ' || curChar == '\t' || curChar == '\r') // All forms of whitespace chars + carriage return
     {
-        nextChar(); // skip whitespace character to avoid returning invalid tokens in getToken()
+        nextChar(); 
     }
 }
 
-// skip comments while searching source
+// Skip comments while searching source
 void Lexer::skipComments()
 {
     if (curChar == '#')
     {
-        while (curChar != '\n') // haven't reached end of comment yet
+        while (curChar != '\n') // Haven't reached end of comment yet
         {
             nextChar();
         }
     }
 }
 
-// retrieve and return tokens in source to parser/user
+// Retrieve and return tokens in source to parser/user
 Token Lexer::getToken()
 {
     skipWhitespace(); 
     skipComments(); 
-    auto token = Token {"Unknown Token", TokenType::Token::UNKNOWN}; // dummy token made to satisfy compiler
+    auto token = Token {"Unknown Token", TokenType::Token::UNKNOWN}; 
 
-    if (curChar == '+') // PLUS token
+    if (curChar == '+') // PLUS 
     {
         if (peekChar() == '=')
         {
             nextChar();
             auto token = Token {"+=", TokenType::Token::PLUSEQ};
+            // nextChar runs twice to get to next character, then again to go to next token in source
             nextChar();
             return token;
         }
@@ -154,8 +155,8 @@ Token Lexer::getToken()
         }
         else
         {
-            auto token = Token {convertChartoString(curChar), TokenType::Token::PLUS}; // effectively returns the token character and the type of token
-            nextChar(); // keep moving through source string
+            auto token = Token {"+", TokenType::Token::PLUS}; 
+            nextChar(); 
             return token;
         }
     }
@@ -177,129 +178,125 @@ Token Lexer::getToken()
         }
         else
         {
-            auto token = Token {convertChartoString(curChar), TokenType::Token::MINUS}; // effectively returns the token character and the type of token
-            nextChar(); // keep moving through source string
+            auto token = Token {"-", TokenType::Token::MINUS}; 
+            nextChar(); 
             return token;
         }
     }
-    else if (curChar == '/') // SLASH token
+    else if (curChar == '/') // SLASH 
     {
-        auto token = Token {convertChartoString(curChar), TokenType::Token::SLASH};
-        nextChar(); // keep moving through source string
+        auto token = Token {"/", TokenType::Token::SLASH};
+        nextChar(); 
         return token;
     }
-    else if (curChar == '*') // ASTERISK token
+    else if (curChar == '*') // ASTERISK 
     {
-        auto token = Token {convertChartoString(curChar), TokenType::Token::ASTERISK};
-        nextChar(); // keep moving through source string
+        auto token = Token {"*", TokenType::Token::ASTERISK};
+        nextChar();
         return token;
     }
-    else if (curChar == '\n') // NEWLINE token
+    else if (curChar == '\n') // NEWLINE 
     {
         auto token = Token {"NEWLINE CHARACTER", TokenType::Token::NEWLINE};
-        nextChar(); // keep moving through source string
+        nextChar(); 
         return token;
     }
-    else if (curChar == '=') // check whether token is single equal sign or double equal sign
+    else if (curChar == '=') // =/EQ or ==/EQEQ operators
     {
         if (peekChar() == '=')
         {
             nextChar();
             auto token = Token {"==", TokenType::Token::EQEQ};
-            // nextChar runs twice to get to next equal sign, then again to go to next token in source
             nextChar();
             return token;
         }
         else
         {
-            auto token = Token {convertChartoString(curChar), TokenType::Token::EQ};
+            auto token = Token {"=", TokenType::Token::EQ};
             nextChar();
             return token;
         }
     }
-    else if (curChar == '>') // check whether token is > or >=
+    else if (curChar == '>') // >/GT or >=/GTEQ operators
     {
         if (peekChar() == '=')
         {
             nextChar();
             auto token = Token {">=", TokenType::Token::GTEQ};
-            // nextChar runs twice to get to next equal sign, then again to go to next token in source
             nextChar();
             return token;
         }
         else
         {
-            auto token = Token {convertChartoString(curChar), TokenType::Token::GT};
+            auto token = Token {">", TokenType::Token::GT};
             nextChar();
             return token;
         }
     }
-    else if (curChar == '<') // check whether token is < or <=
+    else if (curChar == '<') // </LT or <=/LTEQ operators
     {
         if (peekChar() == '=')
         {
             nextChar();
             auto token = Token {"<=", TokenType::Token::LTEQ};
-            // nextChar runs twice to get to next equal sign, then again to go to next token in source
             nextChar();
             return token;
         }
         else
         {
-            auto token = Token {convertChartoString(curChar), TokenType::Token::LT};
+            auto token = Token {"<", TokenType::Token::LT};
             nextChar();
             return token;
         }
     }
-    else if (curChar == '!') // check if token is !=, otherwise abort lexer
+    else if (curChar == '!') // NOTEQ/!= operator
     {
         if (peekChar() == '=')
         {
             nextChar();
             auto token = Token {"!=", TokenType::Token::NOTEQ};
-            // nextChar runs twice to get to next equal sign, then again to go to next token in source
             nextChar();
             return token;
         }
         else // given unexpected logical NOT, not yet supported :(
         {
-            abort("Expected Token NOTEQ or !=, got: ", std::to_string(peekChar()));
+            abort("Expected Token NOTEQ or !=, got: " + std::to_string(peekChar()));
         }
     }
-    else if (curChar == '\"') // Quotation mark, strings start with single quotation mark and end with anothe one
+    else if (curChar == '\"') // Parsing strings
     {
-        size_t startPosStr = curPos; // mark start of string to later extract
-        nextChar();                  // check content of string starting from here
+        size_t startPosStr = curPos; // Mark start of string to later extract
+        nextChar();                  // Check content of string starting from here
 
-        while (curChar != '\"')
+        while (curChar != '\"') // Search string until illegal character is found or end of string is reached
         {
             if (curChar == '\r' || curChar == '\n' || curChar == '\t' || curChar == '\\' || curChar == '%') // prevent some special characters in string to make C++ compilation easier
             {
-                abort("Illegal character found in string.", " No extra diagnostic info.");
+                abort("Illegal character found in string: " + std::to_string(curChar));
             }
-            nextChar(); // keep going until we reached end of string, marked by second quotation mark
+            nextChar();
         }
         // substr starts from first parameter index then extracts until it reaches (2nd param value) length of characters, not to the index of the second parameter!
         // 2nd param is to the total length of the string - 1, to discard quotation mark
         auto token = Token {std::string(source).substr(startPosStr, (curPos-startPosStr)-1), TokenType::Token::STRING}; 
-        nextChar(); // skip over second quotation mark to prevent abort
+        nextChar();
         return token;
     }
-    else if (std::isdigit(curChar)) // isdigit function takes int parameter, implicit conversion
+    else if (std::isdigit(curChar)) // Parse numbers (int/floating-point)
     {
-        size_t startPosStr = curPos - 1; // mark start of number(s) to extract
+        size_t startPosStr = curPos - 1; // Mark start of number(s) to extract
             
         while (isdigit(peekChar()))
         {
             nextChar();
         }
-        if (peekChar() == '.') // decimal point
+        if (peekChar() == '.') // Decimal point
         {
             nextChar();
 
-            if (!(isdigit(peekChar()))) // not integral element after decimal point, WILL NOT CATCH NON-INTEGRAL ELEMENT AFTER 1ST NUMBER, unknown token will be returned instead on else statement below
+            if (!(isdigit(peekChar()))) // Non-integral element after decimal point
             {
-                abort("Illegal character in number: ", std::to_string(curChar)); // send additional diagnostic info
+                abort("Illegal character in number: " + std::to_string(curChar));
             }
             while ((isdigit(peekChar())))
             {
@@ -307,26 +304,26 @@ Token Lexer::getToken()
             }
         }
         // substr starts from first parameter index then extracts until it reaches (2nd param value) length of characters, not to the index of the second parameter!
-        // 2nd param is to the last number in token
+        // 2nd param is to the last number found
         auto token = Token {std::string(source).substr(startPosStr, (curPos-startPosStr)), TokenType::Token::NUMBER}; 
-        nextChar(); // continue to next character to avoid checking another number and aborting
+        nextChar(); 
         return token;
     }
-    else if (curChar == ':')
+    else if (curChar == ':') // COLON
     {
-        auto token = Token {convertChartoString(curChar), TokenType::Token::COLON};
+        auto token = Token {":", TokenType::Token::COLON};
         nextChar();
         return token; 
     }
-    else if (isalpha(curChar)) // next string of character might be an identifier or keyword
+    else if (isalpha(curChar)) // Parsing identifiers or keywords
     {
-        size_t startPosStr = curPos - 1; // mark start of character(s) to extract for keyword/identifier
+        size_t startPosStr = curPos - 1; // Mark start of character(s) to extract for keyword/identifier
 
-        while (isalnum(curChar)) // retrieve all consective alphanumeric characters, until non-alphanumeric character is reached (e.g. whitespace)
+        while (isalnum(curChar)) // Retrieve all consective alphanumeric characters, until non-alphanumeric character is reached
         {
             nextChar();
         }
-        // create substring of keyword or identifier, then check if substring is keyword or identifier
+        // Create substring of keyword or identifier, then check if substring is keyword or identifier
         auto subStrToken = std::string(source).substr(startPosStr, (curPos-startPosStr) - 1);
         auto keyword = Lexer::isKeywordorType(subStrToken);
 
@@ -337,12 +334,12 @@ Token Lexer::getToken()
     }
     else if (curChar == '\0') // EOF token
     {
-        auto token = Token {"EOF CHARACTER", TokenType::Token::ENDOFFILE}; // "no token" returned on EOF
-        nextChar(); // keep moving through source string
+        auto token = Token {"EOF CHARACTER", TokenType::Token::ENDOFFILE};
+        nextChar(); 
         return token;
     }
-    else // unknown token
-        abort("Unknown token: ", convertChartoString(curChar)); // send additional diagnostic info
+    else // Unknown token
+        abort("Unknown token: " + convertChartoString(curChar)); 
 
     return token; // solely here to satisfy g++, will never actually execute since abort() gets called otherwise
 }

@@ -35,18 +35,24 @@
 - Type casting does NOT handle semantic errors, like casting a string to an int and vice-versa, getting type of cast ident. is too bothersome
 - Added boolean hasTrailingIf to Parser component to verify IF statement structure, prevent illegal C++ syntax
 
-##Nubb++ 1.6 (08/day/2024)
+##Nubb++ 1.6 (08/31/2024)
 - FOR statements (similar syntax to C++) 
     - Limited only to integral types, no strings since strings cannot be indexed in Nubb++, and probably will never be available since that'd be too advanced for a dummy language like this
 - Implemented '++', '--', '+=', and '-=' operators for better expressions support.
 - Adjusted CAST statement syntax to use 'colon'/; rather than equal sign (see grammar.txt)
 
+##Nubb++ 1.6.1 (09/01/2024)
+- Adjusted input validation fix in Parser to only clear buffer and reset std::cin (cannot set a string input value to -1 lol)
+- nubb++build script now deletes out.cpp once compilation is done (use the .exe file if you want to keep the original C++ file)
+- Removed most instances of convertChartoString calls in Lexer to improve performance of Lexer
+- Revamped abort() function in Lexer and Parser to use only 1 parameter (using string concatenation now)
+- Removed and improved comments across codebase
+
 ## Upcoming Features (TBD)
-- Refactor literally everything (primarly booleans since in the parse tree their next to numbers which makes no sense)
 - NOT operator implementation
-- Functions support (void to start, then return types will be added)
-- Arrays
 - Better error messages (line number/more descriptive messages making suggestions for changes!)
+- Functions support (including return types support; int, double, float, string, and void)
+- Arrays
 
 ## Potential Features (TBD, Slight chance to not be implemented)
 - AST/Astract Syntax Tree Representation (requires research since I have no clue what this is)

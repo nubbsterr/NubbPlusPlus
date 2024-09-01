@@ -1,9 +1,9 @@
 #include "parser.h"
 
-// exit on fatal error in parser
-void Parser::abort(std::string_view message, auto optional, std::string_view optional_, auto optional__)
+// Exit on fatal error in Parsing process
+void Parser::abort(std::string_view message)
 {
-    std::cout << "[FATAL] Parsing error. " << message << optional << optional_ << optional__ << '\n';
+    std::cout << "[FATAL] Parsing error. " << message << '\n';
     std::exit(1); 
 }
 
@@ -42,7 +42,7 @@ std::string Parser::matchType()
     }
     else
     {
-        abort("LET, FOR, or CAST statement couldn't use type: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+        abort("LET, FOR, or CAST statement couldn't use type: " + curToken.tokenText);
     }
     
     return "auto";
@@ -53,7 +53,7 @@ void Parser::match(TokenType::Token tokenKind)
 {
     if (!(checkToken(tokenKind)))
     { 
-       abort("Expected token enum ", tokenKind, ", got ", curToken.tokenKind);
+       abort("Expected token enum: " + std::to_string(tokenKind) + ", got: " + std::to_string(curToken.tokenKind));
     }
     nextToken();
 }
@@ -77,44 +77,44 @@ void Parser::nl()
 // primary ::= number | ident | bool
 void Parser::primary()
 {
-    if (checkToken(TokenType::Token::NUMBER)) // constant literal
+    if (checkToken(TokenType::Token::NUMBER)) // constant integral literal
     {
         emit.emit(curToken.tokenText);
-        nextToken(); // continue parsing
+        nextToken();
     }
     else if (checkToken(TokenType::Token::TRUE)) // boolean literal
     {
         emit.emit("true");
-        nextToken(); // continue parsing
+        nextToken();
     }
     else if (checkToken(TokenType::Token::FALSE)) // boolean literal
     {
         emit.emit("false");
-        nextToken(); // continue parsing
+        nextToken();
     }
     else if (checkToken(TokenType::Token::NONE))  // boolean literal
     {
         emit.emit("NULL");
-        nextToken(); // continue parsing
+        nextToken();
     }
     else if (checkToken(TokenType::Token::IDENT)) // identifier of integral type
     {
         if (!(symbols.contains(curToken.tokenText)))
         {
-            abort("Referencing variable before assignment: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+            abort("Referencing variable before assignment: " + curToken.tokenText);
         }
 
         emit.emit(curToken.tokenText);
-        nextToken(); // continue parsing
+        nextToken(); 
     }
     else if (checkToken(TokenType::Token::STRING)) // string literal
     {
         emit.emit('\"' + curToken.tokenText + '\"'); // quotation marks cuz without them we have plain text in the output
-        nextToken(); // continue parsing
+        nextToken();
     }
-    else // an unknown value of unknown/imaginary type, abort
+    else // an unknown value of unknown/imaginary type
     {
-        abort("Unexpected token at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+        abort("Unexpected primary token at: " + curToken.tokenText);
     }
 }
 
@@ -191,7 +191,7 @@ void Parser::comparison()
     }
     else
     {
-        abort("Expected comparison at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+        abort("Expected comparison at: " + curToken.tokenText);
     }
 
     // more than one comparison operator: ==, <=, ...
@@ -225,7 +225,7 @@ void Parser::statement()
     else if (checkToken(TokenType::Token::ELSE)) // "ELSE" nl {statement} "ENDIF" nl 
     {
         if (hasTrailingIf == false)
-            abort ("Cannot have ELSE statement ", "without trailing ", "IF statement", ".");
+            abort("Cannot have ELSE statement without trailing IF statement.");
 
         nextToken();
         emit.emitLine("else");
@@ -246,7 +246,7 @@ void Parser::statement()
     else if (checkToken(TokenType::Token::ELIF)) // "ELIF" comparison "THEN" nl {statement} "ENDIF" nl 
     {
         if (hasTrailingIf == false)
-            abort ("Cannot have ELIF statement ", "without trailing ", "IF statement", ".");
+            abort("Cannot have ELIF statement without trailing IF statement.");
 
         nextToken();
         emit.emit("else if ("); // comparison goes inside paranthesis
@@ -314,13 +314,14 @@ void Parser::statement()
         /*
         
         FOR statements do NOT allow global/static variables previously defined to be used. Everything must
-        be defined within the scope of the FOR statement.
+        be defined within the scope of the FOR statement. (Local variables is good practice anyways :P)
 
         e.g. 'FOR a: a <= 10: a++ THEN' will not execute since no type can be found for the identifier.
         You'd have to change it to something like 'FOR int a: a <= 10: a++' for the FOR statement to compile.
 
         This can be fixed by creating a new Variable struct/class system where we verify types of variables, so that previously defined
         variables can be recognized and evaluated properly (i.e. deemed legal/illegal for the FOR statement).
+        
         */
 
         // FOR loops only support integral identifiers, no string loops :P
@@ -333,7 +334,7 @@ void Parser::statement()
         }
         else 
         {
-            abort("Illegal use of type: \'", curToken.tokenText, "\' in FOR statement", ".");
+            abort("Illegal use of type: \'" + curToken.tokenText + "\' in FOR statement.");
         }
 
         // temporarily add FOR statement identifier so parser can use local variable in FOR statement
@@ -341,13 +342,13 @@ void Parser::statement()
         std::string localForIterator { curToken.tokenText };
         symbols.insert(localForIterator);
             
-        nextToken(); 
-        nextToken(); // skip semi-colon after init-statement/ident
+        nextToken();        // skip colon after init-statement/ident
+        nextToken();        // called twice to skip over ident then colon, which will then land on comparison
 
         comparison();
-        emit.emit(";");     // emit semi-colon after condition
+        emit.emit(";");
 
-        nextToken();        // skip semi-colon after comparison/condition
+        nextToken();        // skip colon after comparison/condition
 
         expression();
         emit.emitLine(")"); // close FOR statement after end-expression parsed
@@ -372,20 +373,20 @@ void Parser::statement()
 
         if (labelsDeclared.contains(curToken.tokenText)) // ensure LABEL given doesn't exist to prevent redefiniton, otherwise add to set
         {
-            abort("Label already exists: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+            abort("Redefition of label: " + curToken.tokenText);
         }
-        labelsDeclared.insert(curToken.tokenText); // add LABEL to set since there's no redefinition
+        labelsDeclared.insert(curToken.tokenText);
 
-        emit.emitLine(curToken.tokenText + ":"); // statement label for goto
+        emit.emitLine(curToken.tokenText + ":"); 
         match(TokenType::Token::IDENT);          // match for identifier after LABEL
     }
     else if (checkToken(TokenType::Token::GOTO)) // "GOTO" ident nl
     {
         nextToken();
-        labelsGotoed.insert(curToken.tokenText); // add LABEL that has been gotoed, i.e. the identifier of the LABEL
+        labelsGotoed.insert(curToken.tokenText); // add LABEL identifier that has been gotoed
         
         emit.emitLine("goto " + curToken.tokenText + ';');
-        match(TokenType::Token::IDENT);         // match for identifier after GOTO
+        match(TokenType::Token::IDENT);          // match for identifier after GOTO
     }
     else if (checkToken(TokenType::Token::LET)) // "LET" type ident "=" expression nl
     {
@@ -393,10 +394,10 @@ void Parser::statement()
 
         if (!(symbols.contains(curToken.tokenText))) // if we see an undefined variable in LET statement
         {
-            emit.emit(matchType()); // emit type of declared variable
+            emit.emit(matchType());                      // emit type of declared variable
 
             symbols.insert(curToken.tokenText);          // add undefined variable to set after fetching type
-            emit.emit(" " + curToken.tokenText + " { "); // variable declaration with static type for type deduction
+            emit.emit(" " + curToken.tokenText + " { "); // variable declaration with static type
 
             match(TokenType::Token::IDENT); // match for identifier after LET keyword
 
@@ -408,7 +409,7 @@ void Parser::statement()
             
             */
 
-            match(TokenType::Token::EQ);    // then match for EQ sign 
+            match(TokenType::Token::EQ); // then match for EQ sign 
 
             expression(); // then parse for expression, will return variable value
             emit.emitLine(" };"); 
@@ -424,12 +425,12 @@ void Parser::statement()
             emit.emitLine(";"); 
         }
     }
-    else if (checkToken(TokenType::Token::CAST)) // "CAST" ident: type
+    else if (checkToken(TokenType::Token::CAST)) // "CAST" ident ":" type
     {
-        nextToken(); // go to ident
+        nextToken();
 
         if (!(symbols.contains(curToken.tokenText))) // identifier to cast isn't defined
-            abort("Cannot cast undefined identifier: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+            abort("Cannot cast undefined variable: " + curToken.tokenText);
 
         std::string cast_ident { curToken.tokenText }; // save cast identifier to check validity later
         
@@ -440,7 +441,7 @@ void Parser::statement()
         std::string cast_type { matchType() };         // get type to cast identifier to
 
         if (cast_type == "auto") // cannot use 'auto' for type casting
-            abort("Cannot case identifier to type: ", cast_type, "Illegal use of type: ", cast_type);
+            abort("Cannot cast variable to type 'auto'");
 
         emit.emitLine(cast_type + ">(" + cast_ident + ");"); // emit rest of CAST statement
 
@@ -451,26 +452,19 @@ void Parser::statement()
 
         if (!(symbols.contains(curToken.tokenText)))
         {   
-            // must declare at header otherwise it'll look something like: 
-            // std::cin >> float (curToken.text)
-            
             /* 
              * Nubb++ has requires static type after INPUT statement. If not provided,
              * parsing will abort.
-             * 
-             * 
-             * 
-             * std::cin is diagnosed for invalid input and cleared properly as well.
              */
             
             if (curToken.tokenText == "auto") // attempting to use auto type on uninitialized variable declaration
             {
                 nextToken(); // nextToken() to return variable in question to user so they can debug their dumb mistake
-                abort("Cannot use variable of type 'auto' in INPUT: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+                abort("Cannot use variable of type 'auto' in INPUT: " + curToken.tokenText);
             }
 
-            emit.headerLine(matchType() + " " + curToken.tokenText + " {};"); // emit type of given variable and identifier 
-            symbols.insert(curToken.tokenText); // add undefined variable to set here then,
+            emit.headerLine(matchType() + " " + curToken.tokenText + " {};"); // emit input variable at header of source
+            symbols.insert(curToken.tokenText);
         }
         // to circumvent std::cin failing on invalid input 
         // we implement input validation to ever std::cin/INPUT call
@@ -479,7 +473,6 @@ void Parser::statement()
         emit.emitLine("\tif (std::cin.fail()) // invalid input given, crashes std::cin");
         emit.emitLine("\t{");
         
-        emit.emitLine("\t\t" + curToken.tokenText + " = -1; // default value on extraction failure"); 
         emit.emitLine("\t\tstd::cin.clear(); // reset std::cin back to normal mode");
         emit.emitLine("\t\tstd::cin.ignore(std::numeric_limits<std::streamsize>::max(), \'\\n\'); // clear input buffer up to next newline character ");
         
@@ -489,7 +482,7 @@ void Parser::statement()
     }
     else // invalid staement occured somehow, effectively a syntax error
     {
-        abort("Invalid statement at: ", curToken.tokenText, ". Token enum: ", curToken.tokenKind);
+        abort("Invalid statement at: " + curToken.tokenText);
     }
 
     nl(); // output newline
@@ -503,7 +496,7 @@ void Parser::program()
     // start appending basic includes and main() function to header
     emit.headerLine("// Thank you for using Nubb++ ❤️\n");
     emit.headerLine("#include <iostream>");
-    emit.headerLine("#include <limits>"); // limits for inalid input to clear buffer and reset cin
+    emit.headerLine("#include <limits>");   // limits for invalid input to clear buffer and reset cin
     emit.headerLine("#include <string>\n"); // for string variable usage with static types as of Nubb++ 1.4
     emit.headerLine("int main()");
     emit.headerLine("{"); // yes we put the curly brace on the next line, WE ARE NORMAL PEOPLE
@@ -517,7 +510,7 @@ void Parser::program()
         nextToken();
     }
 
-    // parse all statements in program until EOF is reached in source file
+    // parse all statements in program until EOF is reached
     while (!(checkToken(TokenType::Token::ENDOFFILE)))
     {
         statement();
@@ -530,12 +523,12 @@ void Parser::program()
 
     std::cout << "[INFO] PROGRAM: main() closed. Checking for undefined LABELS...\n";
 
-    // when parsing is finished, check for undefined variables
+    // When parsing is finished, check for undefined labels
     for (auto itr : labelsGotoed)
     {
-        if (!(labelsDeclared.contains(itr))) // if LABEL not declared but is trying to be GOTO'ed
+        if (!(labelsDeclared.contains(itr)))
         {
-            abort("Attempting to GOTO an undefined label: ", itr, " ", " "); // empty spaces cuz nothing else to add + abort requires 4 arguments
+            abort("Attempting to GOTO an undefined label: " + itr);
         }
     }
 
@@ -543,7 +536,7 @@ void Parser::program()
     emit.writeFile(emit.code, emit.header); // write emitted code to output file, see test.cpp for why we call writeFile here
 }
 
-// initalizes peekToken and curToken
+// Initalizes peekToken and curToken 
 void Parser::init()
 {
     nextToken();

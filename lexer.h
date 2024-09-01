@@ -70,22 +70,22 @@ struct TokenType
 
 struct Token
 {
-    std::string tokenText;  // empty to start
-    int tokenKind;          // unknown token to start
+    std::string tokenText;  // Empty to start
+    int tokenKind;          // Unknown enum value to start
 };
 
 struct Lexer
 {
-    std::string source;
-    size_t curPos { 0 };
-    char curChar { ' ' } ;
+    std::string source;     // String containing source file contents
+    size_t curPos { 0 };    // Current index position in source string 
+    char curChar { ' ' } ;  // Current character found in source string
 
     void init_source();
     TokenType::Token isKeywordorType(std::string_view tokText);
     std::string convertChartoString(char c);
     void nextChar();
     char peekChar();
-    void abort(std::string_view message, std::string_view optional);
+    void abort(std::string_view message);
     void skipWhitespace();
     void skipComments();
     Token getToken();

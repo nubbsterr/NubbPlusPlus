@@ -11,7 +11,7 @@ statement ::= "PRINT" (expression | string) nl
     | "LABEL" ident nl
     | "GOTO" ident nl
     | "LET" type ident "=" expression nl
-    | "CAST" ident: type
+    | "CAST" ident ":" type
     | "INPUT" (type ident | ident)  nl
 type::= "int" | "float" | "double" | "string" | "bool"
 comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+

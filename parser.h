@@ -4,9 +4,9 @@
 #include <cstdlib>  // std::exit
 #include <iostream> // IO
 
-#include "lexer.h"   // forward/include lexer so parser can use Lexer object and use its methods
-#include "emitter.h" // forward/include emitter so parser can use Emitter object and its methods
-#include <set>       // to use sets for storing defined variables, labels and goto'ed labels to prevent goto's on undefined labels
+#include "lexer.h"   // Forward/include lexer so parser can use Lexer object
+#include "emitter.h" // Forward/include emitter so parser can use Emitter object 
+#include <set>       // To use sets for storing defined variables, labels, and goto'ed labels
 
 struct Parser
 {
@@ -16,13 +16,13 @@ struct Parser
     Token peekToken;
     Token curToken;
 
-    bool hasTrailingIf { false };           // verify that an IF statement is present before any given ELIF or ELSE
+    bool hasTrailingIf { false };           // Verifies correct IF/ELIF/ELSE structure 
     
-    std::set<std::string>symbols {};        // declared variables so far
-    std::set<std::string>labelsDeclared {}; // labels declared so far (so we can't goto an undefined label)
-    std::set<std::string>labelsGotoed {};   // labels gotoed so far 
+    std::set<std::string>symbols {};        // Declared variables so far
+    std::set<std::string>labelsDeclared {}; // Labels declared so far (prevent goto'ing an undefined label)
+    std::set<std::string>labelsGotoed {};   // Labels gotoed so far (prevent goto'ing an undefined label)
 
-    void abort(std::string_view message, auto optional, std::string_view optional_, auto optional__);
+    void abort(std::string_view message);
     void nextToken();
     auto checkToken(TokenType::Token tokenKind);
     auto checkPeek(TokenType::Token tokenKind);
