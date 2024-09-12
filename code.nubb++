@@ -1,16 +1,19 @@
-# Nubb++ 1.6 Showcase
+# Nubb++ 2.0 Showcase
 
 PRINT "Hello world," 
-PRINT "Welcome to Nubb++ 1.6 ❤️"
+PRINT "Welcome to Nubb++ 2.0 ❤️"
 PRINT ""
 
-LET int iter = 0
+LET array arr = 0, 1, 2, 3,
 
-FOR int iter: iter <= 10: iter++ THEN
-PRINT iter
-PRINT "" # newline
-ENDFOR
+PRINT "The 2nd element in the array is: "
+PRINT arr: 1
+PRINT ""
 
-PRINT "FOR statements are now supported!"
-PRINT "Loads of extra stuff were implemented as well! See changelog for info c:"
-PRINT "There are some missing features with FOR loops, see lines 314-324 in parser.cpp"
+ADD arr: 6
+PRINT "The 3rd element in array after adding a new element is: "
+PRINT arr: 4
+PRINT ""
+
+PRINT "Arrays are now supported! You can add/pop elements from them :D"
+PRINT "They use type deduction so no explicit types please :P"

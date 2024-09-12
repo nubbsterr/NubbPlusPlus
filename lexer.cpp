@@ -35,6 +35,10 @@ TokenType::Token Lexer::isKeywordorType(std::string_view tokText)
         return TokenType::Token::FOR;
     else if (tokText == "ENDFOR")
         return TokenType::Token::ENDFOR;
+    else if (tokText == "ADD")
+        return TokenType::Token::ADD_ARRAY;
+    else if (tokText == "POP")
+        return TokenType::Token::POP_ARRAY;
     else if (tokText == "OR")
         return TokenType::Token::OR;
     else if (tokText == "AND")
@@ -57,6 +61,8 @@ TokenType::Token Lexer::isKeywordorType(std::string_view tokText)
         return TokenType::Token::BOOL_T;
     else if (tokText == "auto")
         return TokenType::Token::AUTO_T;
+    else if (tokText == "array")
+        return TokenType::Token::ARRAY_T;
     else
         return TokenType::Token::IDENT; // no keywords match, return identifier token enum
 }
@@ -68,13 +74,6 @@ void Lexer::init_source()
     nextChar();
 
     std::cout << "[INFO] LEXER: Source initialized.\n";
-}
-
-// Used before creating new Token struct on token return in getToken() method, convert char symbols to std::string
-std::string Lexer::convertChartoString(char c) 
-{
-    std::string str {c};
-    return str;
 }
 
 // find next character in source, stop search on EOF
@@ -315,6 +314,12 @@ Token Lexer::getToken()
         nextChar();
         return token; 
     }
+    else if (curChar == ',') // COMMA
+    {
+        auto token = Token {",", TokenType::Token::COMMA};
+        nextChar();
+        return token;
+    }
     else if (isalpha(curChar)) // Parsing identifiers or keywords
     {
         size_t startPosStr = curPos - 1; // Mark start of character(s) to extract for keyword/identifier
@@ -339,7 +344,7 @@ Token Lexer::getToken()
         return token;
     }
     else // Unknown token
-        abort("Unknown token: " + convertChartoString(curChar)); 
+        abort("Unknown token: " + std::to_string(curChar)); 
 
     return token; // solely here to satisfy g++, will never actually execute since abort() gets called otherwise
 }

@@ -40,6 +40,11 @@ std::string Parser::matchType()
         nextToken();
         return "std::string";
     }
+    else if (curToken.tokenText == "array")
+    {
+        nextToken();
+        return "std::vector";
+    }
     else
     {
         abort("LET, FOR, or CAST statement couldn't use type: " + curToken.tokenText);
@@ -218,8 +223,28 @@ void Parser::statement()
         else // expression given otherwise
         {
             emit.emit("std::cout << ");
-            expression();
-            emit.emitLine(";");                           // close expression
+            if (peekToken.tokenKind == TokenType::Token::COLON) // printing an element from an array
+            {
+                if (!(symbols.contains(curToken.tokenText))) // array undefined
+                {
+                    abort("Cannot print index content from undefined array: " + curToken.tokenText);
+                }
+
+                emit.emit(curToken.tokenText + "[");
+                
+                nextToken();
+                nextToken();
+                // skip over colon to get to index number, index number CAN EXCEED ARRAY BOUNDS, there is no checking for
+                // that since doing so will require a bunch of testing and debugging :P (wouldn't be hard, just tiresome)
+                expression(); 
+
+                emit.emit("]");
+            }
+            else
+            {
+                expression();
+            }
+            emit.emitLine(";"); // close expression
         }
     }
     else if (checkToken(TokenType::Token::ELSE)) // "ELSE" nl {statement} "ENDIF" nl 
@@ -394,10 +419,19 @@ void Parser::statement()
 
         if (!(symbols.contains(curToken.tokenText))) // if we see an undefined variable in LET statement
         {
-            emit.emit(matchType());                      // emit type of declared variable
-
-            symbols.insert(curToken.tokenText);          // add undefined variable to set after fetching type
-            emit.emit(" " + curToken.tokenText + " { "); // variable declaration with static type
+            std::string var_type { matchType() }; // save type from matchType to initialize variables properly, mainly arrays and normal integral/string variables
+            
+            if (var_type != "std::vector") 
+            {
+                emit.emit(var_type); // emit type of declared variable if NOT an array (using type deduction in C++ for std::vector, no explicit types)
+                symbols.insert(curToken.tokenText);          // add undefined variable to set after fetching type
+                emit.emit(" " + curToken.tokenText + " { "); // variable declaration with static type
+            }
+            else
+            {
+                symbols.insert(curToken.tokenText);          // add undefined variable to set after fetching type
+                emit.emit("std::vector " + curToken.tokenText + " { "); // variable declaration with static type
+            }
 
             match(TokenType::Token::IDENT); // match for identifier after LET keyword
 
@@ -409,13 +443,36 @@ void Parser::statement()
             
             */
 
-            match(TokenType::Token::EQ); // then match for EQ sign 
+            match(TokenType::Token::EQ);   // then match for EQ sign 
+            if (var_type == "std::vector") // handle array initialization
+            {
+                while (curToken.tokenKind != TokenType::Token::NEWLINE) // until a newline character is reached
+                {
+                    expression();                   // get variables/literals to be added into array
+                    match(TokenType::Token::COMMA); // match comma after every expression
+                    emit.emit(","); 
+                }
+            }
+            else
+            {
+                expression(); // then parse for expression, will return variable value
+            }
 
-            expression(); // then parse for expression, will return variable value
             emit.emitLine(" };"); 
         }
         else
         {
+
+            /*
+            
+            Slight vulnerability here with arrays. You can manipulate them with an expression like 'arr = 4'
+            and it will compile, however, this will obviously not run with g++. So for the time being (and unless asked),
+            I'll just leave this as is.
+
+            If you wanna add/remove stuff in arrays, do so with the ADD/POP statements.
+            
+            */
+
             emit.emit(curToken.tokenText + " = "); // known variable, reference without auto keyword
             
             match(TokenType::Token::IDENT); // match for identifier after LET keyword
@@ -480,6 +537,31 @@ void Parser::statement()
         
         match(TokenType::Token::IDENT); // match for identifier after INPUT keyword
     }
+    else if (checkToken(TokenType::Token::ADD_ARRAY)) // "ADD" array ":" expression nl
+    {
+        nextToken();
+
+        if (!(symbols.contains(curToken.tokenText)))
+            abort("Cannot add element to undefined array: " + curToken.tokenText);
+
+        emit.emit(curToken.tokenText + ".push_back(");
+
+        nextToken();
+        match(TokenType::Token::COLON);
+        expression();
+
+        emit.emitLine(");");
+    }
+    else if (checkToken(TokenType::Token::POP_ARRAY)) // "POP" array nl
+    {
+        nextToken();
+
+        if (!(symbols.contains(curToken.tokenText)))
+            abort("Cannot pop element from undefined array: " + curToken.tokenText);
+        
+        emit.emitLine(curToken.tokenText + ".pop_back();");
+        nextToken();
+    }
     else // invalid staement occured somehow, effectively a syntax error
     {
         abort("Invalid statement at: " + curToken.tokenText);
@@ -496,8 +578,9 @@ void Parser::program()
     // start appending basic includes and main() function to header
     emit.headerLine("// Thank you for using Nubb++ ❤️\n");
     emit.headerLine("#include <iostream>");
-    emit.headerLine("#include <limits>");   // limits for invalid input to clear buffer and reset cin
-    emit.headerLine("#include <string>\n"); // for string variable usage with static types as of Nubb++ 1.4
+    emit.headerLine("#include <limits>");   // for invalid input to clear buffer and reset cin
+    emit.headerLine("#include <string>");   // for string variable usage with static types as of Nubb++ 1.4
+    emit.headerLine("#include <vector>\n"); // for array/vector usage as of Nubb++ 2.0
     emit.headerLine("int main()");
     emit.headerLine("{"); // yes we put the curly brace on the next line, WE ARE NORMAL PEOPLE
 
@@ -532,7 +615,7 @@ void Parser::program()
         }
     }
 
-    std::cout << "[INFO] PROGRAM: Parsing complete. Writing to C++ source...\n";
+    std::cout << "[INFO] PROGRAM: Parsing complete. Pushing to Emitter...\n";
     emit.writeFile(emit.code, emit.header); // write emitted code to output file, see test.cpp for why we call writeFile here
 }
 

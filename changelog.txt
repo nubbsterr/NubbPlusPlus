@@ -48,11 +48,18 @@
 - Revamped abort() function in Lexer and Parser to use only 1 parameter (using string concatenation now)
 - Removed and improved comments across codebase
 
+##Nubb++ 2.0 ()
+- Arrays implemented using std::vector
+    - Can add/remove elements using ADD/POP statements (see grammar.txt for syntax)
+        - ADD uses .push_back() from C++ and adds whatever element you're calling to the back of the array
+        - POP uses .pop_back() from C++, so the element at the end of the array will be what gets removed. This may be tweaked in the future to allow deletion of elements at specific indices. 
+    - Can print elements from explicit indices using regular PRINT statements with syntax: PRINT arr: 4 (arr = identifier, 4 = index)
+- Arrays do NOT have type validation, meaning you can have strings and ints in an array, but your code will fail to compile with g++ since all data types in the array MUST be the same.
+
 ## Upcoming Features (TBD)
 - NOT operator implementation
 - Better error messages (line number/more descriptive messages making suggestions for changes!)
 - Functions support (including return types support; int, double, float, string, and void)
-- Arrays
 
 ## Potential Features (TBD, Slight chance to not be implemented)
 - AST/Astract Syntax Tree Representation (requires research since I have no clue what this is)

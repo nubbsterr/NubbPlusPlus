@@ -1,7 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <string> // for std::string to convert chars, and for member variables of structs
+#include <string> // for std::string 
 #include <cstdlib>  // for std::exit
 #include <iostream> // IO
 
@@ -31,6 +31,8 @@ struct TokenType
         ENDWHILE = 114,
         FOR = 115,
         ENDFOR = 116,
+        ADD_ARRAY = 117,
+        POP_ARRAY = 118,
         // Operators.
         EQ = 201,       // Single Equal '=' 
         PLUS = 202,
@@ -61,8 +63,10 @@ struct TokenType
         STRING_T = 504,
         BOOL_T = 505,
         AUTO_T = 506,
+        ARRAY_T = 507,
         // Miscellaneous.
         COLON = 601,
+        COMMA = 602,
         // Unknown Token.
         UNKNOWN = 700,  // default value of token variable in getToken() method
     };
@@ -82,7 +86,6 @@ struct Lexer
 
     void init_source();
     TokenType::Token isKeywordorType(std::string_view tokText);
-    std::string convertChartoString(char c);
     void nextChar();
     char peekChar();
     void abort(std::string_view message);
