@@ -16,7 +16,7 @@ statement ::= "PRINT" (expression | string) nl
     | "ADD" array ":" expression nl
     | "POP" array nl
 type::= "int" | "float" | "double" | "string" | "bool" | "array"
-comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
+comparison ::= ["NOT"] expression {("++" | "--") | ("==" | "!=" | ">" | ">=" | "<" | "<=") expression}
 expression ::= term {( "-" | "+" | "-=" | "+-" ) term} | term ( "++" | "--")
 term ::= unary {( "/" | "*" ) unary}
 unary ::= ["+" | "-"] primary

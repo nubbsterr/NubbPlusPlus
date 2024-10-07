@@ -1,0 +1,15 @@
+( >= Nubb++ 2.0 )
+
+LET array arr = 0, 1, 2, 3,
+
+PRINT "The 2nd element in the array is: "
+PRINT arr: 1
+PRINT ""
+
+ADD arr: 6
+PRINT "The 3rd element in array after adding a new element is: "
+PRINT arr: 4
+PRINT ""
+
+PRINT "Arrays are now supported! You can add/pop elements from them :D"
+PRINT "They use type deduction so no explicit types please :P"

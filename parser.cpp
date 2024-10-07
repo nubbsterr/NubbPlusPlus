@@ -169,9 +169,21 @@ void Parser::expression()
     }
 }
 
-// comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
+// comparison ::= ["NOT"] expression {("++" | "--") | ("==" | "!=" | ">" | ">=" | "<" | "<=") expression}
+// Zero or more NOT operator, 1 or more expressions total, zero or more comparison/increment/decrement operator(s)
 void Parser::comparison()
 {
+    bool hasNOToperator = false; // used to end comparison with additional closing bracket
+
+    if (curToken.tokenText == "NOT") // logical NOT
+    {
+        // emit logical not in C++ w/ bracket for following expression call
+        emit.emit("!(");
+        nextToken(); // go to expression
+        
+        hasNOToperator = true;
+    }
+
     expression(); // parse for expression in comparison
     if (isComparisonOperator()) // see if there is a valid operator for comparison
     {
@@ -196,7 +208,15 @@ void Parser::comparison()
     }
     else
     {
-        abort("Expected comparison at: " + curToken.tokenText);
+        // Inspect for end to IF statement given 'IF NOT ident' type statement, otherwise abort
+        if (curToken.tokenKind == TokenType::Token::THEN)
+        {
+            ; // do nothing and return to IF statement call
+        }
+        else
+        {
+            abort("Expected comparison at: " + curToken.tokenText);
+        } 
     }
 
     // more than one comparison operator: ==, <=, ...
@@ -206,6 +226,10 @@ void Parser::comparison()
         nextToken();
         expression();
     }
+
+    // emit extra closing bracket when a NOT operator is used
+    if (hasNOToperator)
+        emit.emit(")"); 
 }
 
 // statement ::= "PRINT" (expression | string) nl | IF comparison, etc.

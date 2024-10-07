@@ -43,6 +43,8 @@ TokenType::Token Lexer::isKeywordorType(std::string_view tokText)
         return TokenType::Token::OR;
     else if (tokText == "AND")
         return TokenType::Token::AND;
+    else if (tokText == "NOT")
+        return TokenType::Token::NOT;
     else if (tokText == "False")
         return TokenType::Token::FALSE;
     else if (tokText == "True")

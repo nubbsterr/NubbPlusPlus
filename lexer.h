@@ -52,6 +52,7 @@ struct TokenType
         // Logical Operators.
         OR = 301,
         AND = 302,
+        NOT = 303,
         // Boolean Values.
         TRUE = 401,
         FALSE = 402,

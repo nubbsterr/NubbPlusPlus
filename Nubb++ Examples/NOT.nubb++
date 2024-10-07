@@ -1,8 +1,4 @@
-# Nubb++ 2.0 Showcase
-
-PRINT "Hello world," 
-PRINT "Welcome to Nubb++ 2.1 ❤️"
-PRINT ""
+( >= Nubb++ 2.1 )
 
 PRINT "Enter a number (positive or negative): "
 
