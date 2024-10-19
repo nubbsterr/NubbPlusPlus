@@ -11,7 +11,6 @@
 
 int main(int argc, char **argv)
 {
-    // must copy function into main with argc, argv parameters to work
     std::string source;
     std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 2.1\n";
     auto startCompileTime = std::chrono::high_resolution_clock::now(); // get start time of compilation

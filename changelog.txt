@@ -61,12 +61,23 @@
     - Adjusted grammar rules to adhere to 1 or more expressions and '++'/'--' operators
 - Added new 'Nubb++ Examples' folder with Nubb++ snippets. Will update over time given new capabilities.
 
+##Nubb++ 2.2 (10/19/2024)
+- Functions implemented with constant 'auto' type. I plan to include 'void' type functions sometime down the line.
+    - A main function is now required for all Nubb++ programs to execute properly
+        - This is due to newly implemented logic and that separating code between functions would increase the size and confusion of this compiler IMMENSELY.
+    - All functions must return some sort of identifier or expression statement. See grammar.txt for syntax info.
+- CALL keyword implemented to call other functions.
+    - Do keep in mind about function scope, and that you must order function calls to be AFTER the declarationm, similar to C++.
+- Revamped matchType() to use lexer's enum values since they weren't being used, and hard coded string literals are annoying and look stupid, even though they may actually be more performant xD
+    - This has yet to be tested for edge cases but will be in future version updates.
+
 ## Upcoming Features (TBD)
 - Comparison of array indice elements to other identifiers/array indices/literals
-- Better error messages (line number/more descriptive messages making suggestions for changes!)
-- Functions support (including return types support; int, double, float, string, and void)
+- Better error messages (mainly line numbers where mistakes are, and more descriptive messages making suggestions.)
+- 'void' function type.
 
 ## Potential Features (TBD, Slight chance to not be implemented)
 - AST/Astract Syntax Tree Representation (requires research since I have no clue what this is)
 - Syntax highlighting in VSC 
 - FUll language installer built on Python Tkinter or C++ (install most recent compiler build from repo + bin command using nubb++build bash script)
+- 

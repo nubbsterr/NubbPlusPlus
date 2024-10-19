@@ -29,7 +29,7 @@ void Emitter::writeFile(std::string_view _code, std::string_view _header)
     if (outFile.is_open())
     {
         std::cout << "[INFO] EMITTER: Writing to C++ File...\n";
-
+        
         outFile << _header; // write headers
         outFile << _code;   // and emitted code to file
         outFile.close();    // close file

@@ -33,6 +33,10 @@ struct TokenType
         ENDFOR = 116,
         ADD_ARRAY = 117,
         POP_ARRAY = 118,
+        FUNCTION = 119,
+        ENDFUNCTION = 120,
+        RETURN = 121,
+        CALL = 122,
         // Operators.
         EQ = 201,       // Single Equal '=' 
         PLUS = 202,

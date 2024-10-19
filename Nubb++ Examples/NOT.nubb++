@@ -1,4 +1,4 @@
-( >= Nubb++ 2.1 )
+( Compatible ONLY with Nubb++ 2.1 )
 
 PRINT "Enter a number (positive or negative): "
 

@@ -17,6 +17,7 @@ struct Parser
     Token curToken;
 
     bool hasTrailingIf { false };           // Verifies correct IF/ELIF/ELSE structure 
+    bool enteredFunctionBody { false };     // Ensures functions cannot be nested in functions
     
     std::set<std::string>symbols {};        // Declared variables so far
     std::set<std::string>labelsDeclared {}; // Labels declared so far (prevent goto'ing an undefined label)

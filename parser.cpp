@@ -7,53 +7,53 @@ void Parser::abort(std::string_view message)
     std::exit(1); 
 }
 
-// fetch next token and peek for next token in source
+// Fetch next token and peek for next token in source
 void Parser::nextToken()
 {
     curToken = peekToken;
     peekToken = lex.getToken();
 }
 
-// verify token match for valid statements
+// Verify token match for valid statements
 auto Parser::checkToken(TokenType::Token tokenKind)
 {
     return tokenKind == curToken.tokenKind;
 }
 
-// ensure following token matches for valid statements
+// Ensure following token matches for valid statements
 auto Parser::checkPeek(TokenType::Token tokenKind)
 {
     return tokenKind == peekToken.tokenKind;
 }
 
-// affirm that given type for LET or CAST statement is valid, abort parsing otherwise
+// Check that given type for a statement is valid, abort parsing otherwise
 std::string Parser::matchType()
 {
-    if ((curToken.tokenText == "int") || (curToken.tokenText == "float") || (curToken.tokenText == "double") || (curToken.tokenText == "bool") || (curToken.tokenText == "auto"))
+    if ((curToken.tokenKind == TokenType::Token::INT_T) || (curToken.tokenKind == TokenType::Token::FLOAT_T) || (curToken.tokenKind == TokenType::Token::DOUBLE_T) || (curToken.tokenKind == TokenType::Token::BOOL_T) || (curToken.tokenKind == TokenType::Token::AUTO_T))
     {
         std::string tempType { curToken.tokenText }; // implemented so we can run nextToken() before exiting       
         nextToken();
         return tempType;
     }
-    else if (curToken.tokenText == "string")
+    else if (curToken.tokenKind == TokenType::Token::STRING_T)
     {    
         nextToken();
         return "std::string";
     }
-    else if (curToken.tokenText == "array")
+    else if (curToken.tokenKind == TokenType::Token::ARRAY_T)
     {
         nextToken();
         return "std::vector";
     }
     else
     {
-        abort("LET, FOR, or CAST statement couldn't use type: " + curToken.tokenText);
+        abort("Last statement couldn't use type: " + curToken.tokenText);
     }
     
     return "auto";
 }
 
-// match tokens in statements with source file, abort if token is invalid or otherwise not present
+// Match tokens in statements with source file tokens, abort if token is invalid or otherwise not present
 void Parser::match(TokenType::Token tokenKind)
 {
     if (!(checkToken(tokenKind)))
@@ -63,7 +63,7 @@ void Parser::match(TokenType::Token tokenKind)
     nextToken();
 }
 
-// return true if current token is a comparison operator like <=, ==, etc. false otherwise
+// Return true if current token is a comparison operator like <=, ==, etc. false otherwise
 bool Parser::isComparisonOperator()
 {
     return checkToken(TokenType::Token::GT) || checkToken(TokenType::Token::GTEQ) || checkToken(TokenType::Token::LT) || checkToken(TokenType::Token::LTEQ) || checkToken(TokenType::Token::EQEQ) || checkToken(TokenType::Token::NOTEQ) || checkToken(TokenType::Token::OR) || checkToken(TokenType::Token::AND);
@@ -422,7 +422,7 @@ void Parser::statement()
 
         if (labelsDeclared.contains(curToken.tokenText)) // ensure LABEL given doesn't exist to prevent redefiniton, otherwise add to set
         {
-            abort("Redefition of label: " + curToken.tokenText);
+            abort("Redefinition of label: " + curToken.tokenText);
         }
         labelsDeclared.insert(curToken.tokenText);
 
@@ -489,11 +489,12 @@ void Parser::statement()
 
             /*
             
-            Slight vulnerability here with arrays. You can manipulate them with an expression like 'arr = 4'
+            Slight vulnerability here with arrays and functions. You can manipulate them with an expression like 'arr = 4'
             and it will compile, however, this will obviously not run with g++. So for the time being (and unless asked),
             I'll just leave this as is.
 
             If you wanna add/remove stuff in arrays, do so with the ADD/POP statements.
+            As for functions, why even do something like this. Please be wary of redefinition ya nerds.
             
             */
 
@@ -506,7 +507,7 @@ void Parser::statement()
             emit.emitLine(";"); 
         }
     }
-    else if (checkToken(TokenType::Token::CAST)) // "CAST" ident ":" type
+    else if (checkToken(TokenType::Token::CAST)) // "CAST" ident ":" type nl
     {
         nextToken();
 
@@ -586,6 +587,92 @@ void Parser::statement()
         emit.emitLine(curToken.tokenText + ".pop_back();");
         nextToken();
     }
+    else if (checkToken(TokenType::Token::CALL)) // "CALL" ident nl
+    {
+        nextToken();
+
+        if (!(symbols.contains(curToken.tokenText)))
+        {
+            abort("Cannot call an undefined function.");
+        }
+
+        emit.emitLine(curToken.tokenText + "();");
+        match(TokenType::Token::IDENT);
+
+    }
+    else if (checkToken(TokenType::Token::FUNCTION)) // "FUNCTION" ident ":" nl {statement} "RETURN" ident | expression "ENDFUNCTION" nl
+    {
+        /*
+        
+        Slight vulnerabilities here.
+        RETURN parsing does not check for the variable scope, since once again, I haven't implemented a more sophisticated 
+        variable declaration system to check for such things.
+
+        Because of that, there is the possibility to have variable in other scopes outside of the function body to get past the RETURN
+        statement, which will break the C++ code and create errors in machine code compilation.
+        
+        Functions have a return type of 'auto' once compiled because managing variable stuff and things like that would be a PAIN.
+        
+        */
+
+        nextToken();
+
+        if (enteredFunctionBody)
+            abort("Cannot nest functions in function: " + curToken.tokenText);
+        
+        if(!(symbols.contains(curToken.tokenText))) // function identifier not declared yet
+        {
+            symbols.insert(curToken.tokenText);
+            // emit function identifier and create function body
+            if (curToken.tokenText == "main")
+            {
+                // main function gets special declaration cuz it's the main C++ function
+                emit.emitLine("int main()");
+                emit.emitLine("{");
+            }
+            else
+            {
+                emit.emitLine("auto " + curToken.tokenText + "()");
+                emit.emitLine("{");
+            }
+
+            match(TokenType::Token::IDENT);
+            match(TokenType::Token::COLON);
+        }
+        else // redefintiton of funtion identifier somewhere else in source
+        {
+            abort("Redefinition of function identifier: " + curToken.tokenText);
+        }
+
+        nl();
+        while (!(checkToken(TokenType::Token::RETURN)))
+        {
+            // until function body reaches return statement, parse statements
+            enteredFunctionBody = true;
+            statement();
+        }
+
+        match(TokenType::Token::RETURN);
+        emit.emit("return ");
+
+        // Return identifier, otherwise return an expression
+        if (symbols.contains(curToken.tokenText))
+        {
+            emit.emitLine(curToken.tokenText);
+            match(TokenType::Token::IDENT);
+            match(TokenType::Token::ENDFUNCTION);
+        }
+        else 
+        {
+            expression();
+            emit.emit(";\n"); // Newline before closing bracket, otherwise things look stupid
+            nextToken();
+            match(TokenType::Token::ENDFUNCTION);
+        }
+
+        emit.emitLine("}");
+        enteredFunctionBody = false;        
+    }
     else // invalid staement occured somehow, effectively a syntax error
     {
         abort("Invalid statement at: " + curToken.tokenText);
@@ -600,13 +687,11 @@ void Parser::program()
     std::cout << "[INFO] PROGRAM: Prepping C++ source...\n";
 
     // start appending basic includes and main() function to header
-    emit.headerLine("// Thank you for using Nubb++ ❤️\n");
+    emit.headerLine("// Thank you for using Nubb++ ❤️");
     emit.headerLine("#include <iostream>");
     emit.headerLine("#include <limits>");   // for invalid input to clear buffer and reset cin
     emit.headerLine("#include <string>");   // for string variable usage with static types as of Nubb++ 1.4
-    emit.headerLine("#include <vector>\n"); // for array/vector usage as of Nubb++ 2.0
-    emit.headerLine("int main()");
-    emit.headerLine("{"); // yes we put the curly brace on the next line, WE ARE NORMAL PEOPLE
+    emit.headerLine("#include <vector>\n");   // for array/vector usage as of Nubb++ 2.0
 
     std::cout << "[INFO] PROGRAM: Finished prepping C++ source.\n";
 
@@ -622,11 +707,6 @@ void Parser::program()
     {
         statement();
     }
-
-    std::cout << "[INFO] PROGRAM: Finishing up C++ code file, closing main()..\n";
-
-    emit.emitLine("\treturn 0;");
-    emit.emitLine("}");
 
     std::cout << "[INFO] PROGRAM: main() closed. Checking for undefined LABELS...\n";
 

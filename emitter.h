@@ -10,7 +10,7 @@ struct Emitter
 {
     std::string fullPath {}; // Contains filepath to file of outputted C++ code
     std::string header {};   // String containing content to prepend (add at rout) later in output file (like headers and variable declarartions)
-    std::string code {};     // String holding all C++ code to be emitted
+    std::string code {};     // String containing all C++ code to be emitted
 
     void emit(std::string_view fragement_code); 
     void emitLine(std::string_view fragement_code); 

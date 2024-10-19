@@ -1,4 +1,4 @@
-# Nubb++ 2.2 Showcase
+(Compatible with >= Nubb++ 2.2)
 
 FUNCTION test:
     PRINT "Wow, a statement in a function just executed!"
@@ -14,14 +14,8 @@ FUNCTION test:
 ENDFUNCTION
 
 FUNCTION main:
-    PRINT "Hello world," 
-    PRINT "Welcome to Nubb++ 2.2 ❤️"
-    PRINT ""
-    
-    # Function calls now exist. You also now have to explicitly define a main function.
-    # I might revamp this later down the line, but having it like this makes programming everything nice and simple :)
+    # To call a function, we can use the CALL keyword
     CALL test
-    PRINT "Functions are now supported! See changelog for more info."
 
     RETURN 0
 ENDFUNCTION

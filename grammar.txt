@@ -11,11 +11,13 @@ statement ::= "PRINT" (expression | string) nl
     | "LABEL" ident nl
     | "GOTO" ident nl
     | "LET" type ident "=" expression nl
-    | "CAST" ident ":" type
+    | "CAST" ident ":" type nl
     | "INPUT" (type ident | ident)  nl
     | "ADD" array ":" expression nl
     | "POP" array nl
-type::= "int" | "float" | "double" | "string" | "bool" | "array"
+    | "FUNCTION" ident ":" nl {statement} "RETURN" ident | expression "ENDFUNCTION" nl
+    | "CALL" ident nl
+type ::= "int" | "float" | "double" | "string" | "bool" | "array"
 comparison ::= ["NOT"] expression {("++" | "--") | ("==" | "!=" | ">" | ">=" | "<" | "<=") expression}
 expression ::= term {( "-" | "+" | "-=" | "+-" ) term} | term ( "++" | "--")
 term ::= unary {( "/" | "*" ) unary}

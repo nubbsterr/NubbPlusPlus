@@ -1,4 +1,4 @@
-( >= Nubb++ 2.0 )
+( Compatible ONLY with Nubb++ 2.0 )
 
 LET array arr = 0, 1, 2, 3,
 
