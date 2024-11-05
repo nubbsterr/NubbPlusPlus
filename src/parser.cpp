@@ -47,7 +47,7 @@ std::string Parser::matchType()
     }
     else
     {
-        abort("Last statement couldn't use type: " + curToken.tokenText);
+        abort("Last statement couldn't use type: " + curToken.tokenText + " on line " + std::to_string(currentLine));
     }
     
     return "auto";
@@ -58,7 +58,7 @@ void Parser::match(TokenType::Token tokenKind)
 {
     if (!(checkToken(tokenKind)))
     { 
-       abort("Expected token enum: " + std::to_string(tokenKind) + ", got: " + std::to_string(curToken.tokenKind));
+       abort("Expected token enum: " + std::to_string(tokenKind) + ", got: " + std::to_string(curToken.tokenKind) + " on line " + std::to_string(currentLine));
     }
     nextToken();
 }
@@ -77,6 +77,7 @@ void Parser::nl()
     {
         nextToken();
     }
+    currentLine++;
 }
 
 // primary ::= number | ident | bool
@@ -106,7 +107,7 @@ void Parser::primary()
     {
         if (!(symbols.contains(curToken.tokenText)))
         {
-            abort("Referencing variable before assignment: " + curToken.tokenText);
+            abort("Referencing variable before assignment: " + curToken.tokenText + " on line " + std::to_string(currentLine));
         }
 
         emit.emit(curToken.tokenText);
@@ -119,7 +120,7 @@ void Parser::primary()
     }
     else // an unknown value of unknown/imaginary type
     {
-        abort("Unexpected primary token at: " + curToken.tokenText);
+        abort("Unexpected primary token at: " + curToken.tokenText + " on line " + std::to_string(currentLine));
     }
 }
 
@@ -215,7 +216,7 @@ void Parser::comparison()
         }
         else
         {
-            abort("Expected comparison at: " + curToken.tokenText);
+            abort("Expected comparison at: " + curToken.tokenText + " on line " + std::to_string(currentLine));
         } 
     }
 
@@ -251,7 +252,7 @@ void Parser::statement()
             {
                 if (!(symbols.contains(curToken.tokenText))) // array undefined
                 {
-                    abort("Cannot print index content from undefined array: " + curToken.tokenText);
+                    abort("Cannot print index content from undefined array: " + curToken.tokenText + " on line " + std::to_string(currentLine));
                 }
 
                 emit.emit(curToken.tokenText + "[");
@@ -274,7 +275,7 @@ void Parser::statement()
     else if (checkToken(TokenType::Token::ELSE)) // "ELSE" nl {statement} "ENDIF" nl 
     {
         if (hasTrailingIf == false)
-            abort("Cannot have ELSE statement without trailing IF statement.");
+            abort("Cannot have ELSE statement without trailing IF statement on line " + std::to_string(currentLine));
 
         nextToken();
         emit.emitLine("else");
@@ -295,7 +296,7 @@ void Parser::statement()
     else if (checkToken(TokenType::Token::ELIF)) // "ELIF" comparison "THEN" nl {statement} "ENDIF" nl 
     {
         if (hasTrailingIf == false)
-            abort("Cannot have ELIF statement without trailing IF statement.");
+            abort("Cannot have ELIF statement without trailing IF statement on line " + std::to_string(currentLine));
 
         nextToken();
         emit.emit("else if ("); // comparison goes inside paranthesis
@@ -383,7 +384,7 @@ void Parser::statement()
         }
         else 
         {
-            abort("Illegal use of type: \'" + curToken.tokenText + "\' in FOR statement.");
+            abort("Illegal use of type: \'" + curToken.tokenText + "\' in FOR statement" + " on line " + std::to_string(currentLine));
         }
 
         // temporarily add FOR statement identifier so parser can use local variable in FOR statement
@@ -422,7 +423,7 @@ void Parser::statement()
 
         if (labelsDeclared.contains(curToken.tokenText)) // ensure LABEL given doesn't exist to prevent redefiniton, otherwise add to set
         {
-            abort("Redefinition of label: " + curToken.tokenText);
+            abort("Redefinition of label: " + curToken.tokenText + " on line " + std::to_string(currentLine));
         }
         labelsDeclared.insert(curToken.tokenText);
 
@@ -512,7 +513,7 @@ void Parser::statement()
         nextToken();
 
         if (!(symbols.contains(curToken.tokenText))) // identifier to cast isn't defined
-            abort("Cannot cast undefined variable: " + curToken.tokenText);
+            abort("Cannot cast undefined variable: " + curToken.tokenText + " on line " + std::to_string(currentLine));
 
         std::string cast_ident { curToken.tokenText }; // save cast identifier to check validity later
         
@@ -523,7 +524,7 @@ void Parser::statement()
         std::string cast_type { matchType() };         // get type to cast identifier to
 
         if (cast_type == "auto") // cannot use 'auto' for type casting
-            abort("Cannot cast variable to type 'auto'");
+            abort("Cannot cast variable to type 'auto' on line " + std::to_string(currentLine));
 
         emit.emitLine(cast_type + ">(" + cast_ident + ");"); // emit rest of CAST statement
 
@@ -542,7 +543,7 @@ void Parser::statement()
             if (curToken.tokenText == "auto") // attempting to use auto type on uninitialized variable declaration
             {
                 nextToken(); // nextToken() to return variable in question to user so they can debug their dumb mistake
-                abort("Cannot use variable of type 'auto' in INPUT: " + curToken.tokenText);
+                abort("Cannot use variable of type 'auto' in INPUT: " + curToken.tokenText + " on line " + std::to_string(currentLine));
             }
 
             emit.headerLine(matchType() + " " + curToken.tokenText + " {};"); // emit input variable at header of source
@@ -567,7 +568,7 @@ void Parser::statement()
         nextToken();
 
         if (!(symbols.contains(curToken.tokenText)))
-            abort("Cannot add element to undefined array: " + curToken.tokenText);
+            abort("Cannot add element to undefined array: " + curToken.tokenText + " on line " + std::to_string(currentLine));
 
         emit.emit(curToken.tokenText + ".push_back(");
 
@@ -582,7 +583,7 @@ void Parser::statement()
         nextToken();
 
         if (!(symbols.contains(curToken.tokenText)))
-            abort("Cannot pop element from undefined array: " + curToken.tokenText);
+            abort("Cannot pop element from undefined array: " + curToken.tokenText + " on line " + std::to_string(currentLine));
         
         emit.emitLine(curToken.tokenText + ".pop_back();");
         nextToken();
@@ -593,14 +594,14 @@ void Parser::statement()
 
         if (!(symbols.contains(curToken.tokenText)))
         {
-            abort("Cannot call an undefined function.");
+            abort("Cannot call an undefined function on line " + std::to_string(currentLine));
         }
 
         emit.emitLine(curToken.tokenText + "();");
         match(TokenType::Token::IDENT);
 
     }
-    else if (checkToken(TokenType::Token::FUNCTION)) // "FUNCTION" ident ":" nl {statement} "RETURN" ident | expression "ENDFUNCTION" nl
+    else if (checkToken(TokenType::Token::FUNCTION)) // "FUNCTION" ["VOID"] ident ":" nl {statement} ["RETURN"] ident | expression "ENDFUNCTION" nl
     {
         /*
         
@@ -615,10 +616,17 @@ void Parser::statement()
         
         */
 
+        bool isVoidSpecified { false }; // announce that function is of void type
+        
         nextToken();
+        if (checkToken(TokenType::Token::VOID_SPECIFIER)) // function of void type given
+        {
+            nextToken();
+            isVoidSpecified = true;
+        }
 
         if (enteredFunctionBody)
-            abort("Cannot nest functions in function: " + curToken.tokenText);
+            abort("Cannot nest functions in function: " + curToken.tokenText + " on line " + std::to_string(currentLine));
         
         if(!(symbols.contains(curToken.tokenText))) // function identifier not declared yet
         {
@@ -628,6 +636,11 @@ void Parser::statement()
             {
                 // main function gets special declaration cuz it's the main C++ function
                 emit.emitLine("int main()");
+                emit.emitLine("{");
+            }
+            else if (isVoidSpecified)
+            {
+                emit.emitLine("void " + curToken.tokenText + "()");
                 emit.emitLine("{");
             }
             else
@@ -641,41 +654,53 @@ void Parser::statement()
         }
         else // redefintiton of funtion identifier somewhere else in source
         {
-            abort("Redefinition of function identifier: " + curToken.tokenText);
+            abort("Redefinition of function identifier: " + curToken.tokenText + " on line " + std::to_string(currentLine));
         }
 
         nl();
-        while (!(checkToken(TokenType::Token::RETURN)))
+
+        if(!(isVoidSpecified)) // normal 'auto' return type parsing
         {
-            // until function body reaches return statement, parse statements
-            enteredFunctionBody = true;
-            statement();
+            while (!(checkToken(TokenType::Token::RETURN)))
+            {
+                // until function body reaches return statement, parse statements
+                enteredFunctionBody = true;
+                statement();
+            }
+
+            match(TokenType::Token::RETURN);
+            emit.emit("return ");
+
+            // Return identifier, otherwise return an expression
+            if (symbols.contains(curToken.tokenText))
+            {
+                emit.emitLine(curToken.tokenText);
+                match(TokenType::Token::IDENT);
+                match(TokenType::Token::ENDFUNCTION);
+            }
+            else 
+            {
+                expression();
+                emit.emit(";\n"); // Newline before closing bracket, otherwise things look stupid
+                nextToken();
+                match(TokenType::Token::ENDFUNCTION);
+            }
         }
-
-        match(TokenType::Token::RETURN);
-        emit.emit("return ");
-
-        // Return identifier, otherwise return an expression
-        if (symbols.contains(curToken.tokenText))
+        else // 'void' type returning
         {
-            emit.emitLine(curToken.tokenText);
-            match(TokenType::Token::IDENT);
+            while(!(checkToken(TokenType::Token::ENDFUNCTION)))
+            {
+                statement();
+            }
             match(TokenType::Token::ENDFUNCTION);
         }
-        else 
-        {
-            expression();
-            emit.emit(";\n"); // Newline before closing bracket, otherwise things look stupid
-            nextToken();
-            match(TokenType::Token::ENDFUNCTION);
-        }
-
+        
         emit.emitLine("}");
         enteredFunctionBody = false;        
     }
     else // invalid staement occured somehow, effectively a syntax error
     {
-        abort("Invalid statement at: " + curToken.tokenText);
+        abort("Invalid statement at: " + curToken.tokenText + " on line " + std::to_string(currentLine));
     }
 
     nl(); // output newline

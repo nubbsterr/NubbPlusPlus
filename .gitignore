@@ -1,0 +1,5 @@
+# Remove executables and other misc. files, excluding source
+# code.nubb++ is my testing ground for new versions, nothing special :P
+
+*.exe
+code.nubb++

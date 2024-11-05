@@ -1,6 +1,15 @@
 # All grammar rules of Nubb++, where ::= means "defined as". 
 # E.g. a program is defined as zero or more statements, or program::={statement}
 
+# Grammar breakdown:
+- {} ::= zero or more of whatever is in brackets
+- [] ::= zero or one of whatever is in brackets
+- + ::=  one or more of whatever is to the left of the '+'
+- () ::= just for grouping
+- | ::= Logical OR operator
+- Keywords/operators are denoted as strings (e.g. "PRINT")
+- Anything that isn't in quotation marks is either another grammar rule or token 
+
 program ::= {statement}
 statement ::= "PRINT" (expression | string) nl
     | "ELSE" nl {statement} "ENDIF" nl 
@@ -15,7 +24,7 @@ statement ::= "PRINT" (expression | string) nl
     | "INPUT" (type ident | ident)  nl
     | "ADD" array ":" expression nl
     | "POP" array nl
-    | "FUNCTION" ident ":" nl {statement} "RETURN" ident | expression "ENDFUNCTION" nl
+    | "FUNCTION" ["VOID"] ident ":" nl {statement} ["RETURN"] ident | expression "ENDFUNCTION" nl
     | "CALL" ident nl
 type ::= "int" | "float" | "double" | "string" | "bool" | "array"
 comparison ::= ["NOT"] expression {("++" | "--") | ("==" | "!=" | ">" | ">=" | "<" | "<=") expression}

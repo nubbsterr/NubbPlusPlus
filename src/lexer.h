@@ -31,12 +31,13 @@ struct TokenType
         ENDWHILE = 114,
         FOR = 115,
         ENDFOR = 116,
-        ADD_ARRAY = 117,
-        POP_ARRAY = 118,
+        ADD_ARRAY = 117,      // "Function call" to add element to end of array
+        POP_ARRAY = 118,      // "Function call" to pop element from back of array
         FUNCTION = 119,
-        ENDFUNCTION = 120,
-        RETURN = 121,
-        CALL = 122,
+        VOID_SPECIFIER = 120, // Specifies whether a function is of type 'void', otherwise 'auto' or 'int main' 
+        ENDFUNCTION = 121,
+        RETURN = 122,
+        CALL = 123,
         // Operators.
         EQ = 201,       // Single Equal '=' 
         PLUS = 202,

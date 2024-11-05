@@ -1,0 +1,15 @@
+( Compatible with >= Nubb++ 3.0 )
+
+FUNCTION VOID func:
+    PRINT "We just executed a statement in a void function!"
+    PRINT 1+2
+ENDFUNCTION
+
+FUNCTION main:
+    PRINT "Hello world," 
+    
+    CALL func
+    PRINT "Void functions are now supported! See changelog for more info."
+
+    RETURN 0
+ENDFUNCTION

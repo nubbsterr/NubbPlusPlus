@@ -41,6 +41,8 @@ TokenType::Token Lexer::isKeywordorType(std::string_view tokText)
         return TokenType::Token::POP_ARRAY;
     else if (tokText == "FUNCTION")
         return TokenType::Token::FUNCTION;
+    else if (tokText == "VOID")
+        return TokenType::Token::VOID_SPECIFIER;
     else if (tokText == "ENDFUNCTION")
         return TokenType::Token::ENDFUNCTION;
     else if (tokText == "RETURN")

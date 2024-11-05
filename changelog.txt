@@ -71,13 +71,19 @@
 - Revamped matchType() to use lexer's enum values since they weren't being used, and hard coded string literals are annoying and look stupid, even though they may actually be more performant xD
     - This has yet to be tested for edge cases but will be in future version updates.
 
+##Nubb++ 3.0 (11/04/2024)
+- All of the following suggestions are from u/nysra on reddit from r/cpp_questions, thanks :)
+    - Created new src and CMakeLists file/folder to allow building from source, also for better building on development end
+        - Basically a build system for the project
+    - Added .gitignore to remove some extra files, mainly for testing behind the scenes
+    - Updated README with better documentation and hyperlinks to various sources
+- Line number added to error messages for better debugging (not yet tested in full).
+- Implemented 'void' function type, see grammar.txt for syntax info.
+
 ## Upcoming Features (TBD)
 - Comparison of array indice elements to other identifiers/array indices/literals
-- Better error messages (mainly line numbers where mistakes are, and more descriptive messages making suggestions.)
-- 'void' function type.
 
 ## Potential Features (TBD, Slight chance to not be implemented)
 - AST/Astract Syntax Tree Representation (requires research since I have no clue what this is)
 - Syntax highlighting in VSC 
 - FUll language installer built on Python Tkinter or C++ (install most recent compiler build from repo + bin command using nubb++build bash script)
-- 
