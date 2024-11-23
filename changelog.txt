@@ -80,10 +80,11 @@
 - Line number added to error messages for better debugging (not yet tested in full).
 - Implemented 'void' function type, see grammar.txt for syntax info.
 
-## Upcoming Features (TBD)
-- Comparison of array indice elements to other identifiers/array indices/literals
+##Nubb++ 3.1 (11/22/2024)
+- Can now compare array index values to other expressions through the syntax: {array ident} ":" {array index} [comparison operator] {expression}, see example folder for more info.
+- Discovered bug involving line count for errors, will need to fix this at some point; has yet to be tested.
+- NOTE: This will be the last internal update to Nubb++ (for a while, probably). I plan to implement the below features then move on to other projects!
 
-## Potential Features (TBD, Slight chance to not be implemented)
+## Potential Features (TBD, Slight chance to not be implemented, last few features to add)
 - AST/Astract Syntax Tree Representation (requires research since I have no clue what this is)
-- Syntax highlighting in VSC 
-- FUll language installer built on Python Tkinter or C++ (install most recent compiler build from repo + bin command using nubb++build bash script)
+- Compiler optimizations (optimize code during compilation), "Lexical scope", MORE improvements to compile errors.

@@ -109,9 +109,26 @@ void Parser::primary()
         {
             abort("Referencing variable before assignment: " + curToken.tokenText + " on line " + std::to_string(currentLine));
         }
+        else
+        {
+            if (peekToken.tokenKind == TokenType::Token::COLON) // array index to be emited
+            {
+                emit.emit(curToken.tokenText + "[");
+                
+                nextToken();
+                nextToken();
+                // skip over colon to get to index number, index number CAN EXCEED ARRAY BOUNDS, there is no checking for
+                // that since doing so will require a bunch of testing and debugging :P (wouldn't be hard, just tiresome)
 
-        emit.emit(curToken.tokenText);
-        nextToken(); 
+                emit.emit(curToken.tokenText + "]");
+                nextToken();
+            }
+            else
+            {
+                emit.emit(curToken.tokenText);
+                nextToken(); 
+            }
+        }
     }
     else if (checkToken(TokenType::Token::STRING)) // string literal
     {
@@ -256,18 +273,11 @@ void Parser::statement()
                 }
 
                 emit.emit(curToken.tokenText + "[");
-                
-                nextToken();
-                nextToken();
-                // skip over colon to get to index number, index number CAN EXCEED ARRAY BOUNDS, there is no checking for
-                // that since doing so will require a bunch of testing and debugging :P (wouldn't be hard, just tiresome)
-                expression(); 
-
-                emit.emit("]");
+                expression(); // emit array identifier w/ specified index number
             }
             else
             {
-                expression();
+                expression(); // emit whatever other expression they specified
             }
             emit.emitLine(";"); // close expression
         }
@@ -725,12 +735,14 @@ void Parser::program()
     while (checkToken(TokenType::Token::NEWLINE))
     {
         nextToken();
+        currentLine++;
     }
 
     // parse all statements in program until EOF is reached
     while (!(checkToken(TokenType::Token::ENDOFFILE)))
     {
         statement();
+        currentLine++;
     }
 
     std::cout << "[INFO] PROGRAM: main() closed. Checking for undefined LABELS...\n";

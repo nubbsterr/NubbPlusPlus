@@ -1,0 +1,24 @@
+( Compatible with >= Nubb++ 3.1 )
+
+FUNCTION main:
+    # Declare our array of values
+    LET array arr = 0,3,4,8,
+
+    # if 8 > 4...
+    IF arr: 4 > arr: 3 THEN
+        PRINT "Wow, we just ran a conditional statement and compared two array values!"
+    ENDIF
+
+    # if 0 < 5 (constant literal comparison)...
+    IF arr: 0 < 5 THEN
+        PRINT "Wowza, we just compared an array value to a literal!"
+    ENDIF
+
+    # if 5 > 3 (variable comparison)...
+    LET auto num = 5
+    IF num > arr: 1 THEN
+        PRINT "Yippee, we just compared an array value to a variable!"
+    ENDIF 
+
+    RETURN 0
+ENDFUNCTION
