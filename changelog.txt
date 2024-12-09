@@ -85,6 +85,13 @@
 - Discovered bug involving line count for errors, will need to fix this at some point; has yet to be tested.
 - NOTE: This will be the last internal update to Nubb++ (for a while, probably). I plan to implement the below features then move on to other projects!
 
-## Potential Features (TBD, Slight chance to not be implemented, last few features to add)
-- AST/Astract Syntax Tree Representation (requires research since I have no clue what this is)
-- Compiler optimizations (optimize code during compilation), "Lexical scope", MORE improvements to compile errors.
+#Nubb++ 3.1.1 (12/09/2024)
+- Removed 'Lexical Scope' and 'More compiler error improvements' from Potential Features list, since both areas have been covered decently in the past few updates.
+- Yoinked previous nubb++build script from previous commits and tweaked it a bit.
+    - To use the script, you will need both the bash script and the compiler binary in the same directory.
+        - This may be changed at some point down the line, but currently, I don't plan to change this behaviour.
+    - The script is still rather hardcoded (I suck at bash scripting). There's a fair chance I'll go back sometime to update the script logic to be less of an eyesore.
+- Removed 'AST/Abstract Syntax Tree Representation' from Potential Features list, since it literally isn't needed for compilation and would only be used for debug info, which can already be implemented, but would introduce a lot of bloat and logging.
+- 'Compiler optimizations' feature put on hold at the moment; I can definitely implement portions of it but I won't totally change the compiler to work for optimization.
+    - Features like constant folding where we evaluate constant expressions at compile time are very possible.
+- NOTE: The previous line number bug requires testing still; I'll make sure that it's properly working when I implement 'compiler optimizations'.
