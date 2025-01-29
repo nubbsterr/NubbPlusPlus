@@ -20,6 +20,7 @@ struct Parser
     bool enteredFunctionBody { false };     // Ensures functions cannot be nested in functions
     int currentLine {};                     // Current line # in source file parsing, used for error messages.
     
+    
     std::set<std::string>symbols {};        // Declared variables so far
     std::set<std::string>labelsDeclared {}; // Labels declared so far (prevent goto'ing an undefined label)
     std::set<std::string>labelsGotoed {};   // Labels gotoed so far (prevent goto'ing an undefined label)

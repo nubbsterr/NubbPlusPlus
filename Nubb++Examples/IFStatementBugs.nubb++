@@ -1,0 +1,15 @@
+( Compatible with >= Nubb++ 3.2 )
+
+FUNCTION main:
+    # Below is a buggy IF statement block:
+    IF 1 > 0 THEN
+        PRINT "Hi"
+    ENDIF
+    ELSE
+        PRINT # This will send the error: 'Unexpected primary token at: NEWLINE CHARACTER on line 12', which is a bit ugly but correct.
+              # It suggests that the primary token given to PRINT is a newline, which isn't compliant with our syntax grammar:
+              # "PRINT" (expression | string) nl
+    ENDIF
+
+    RETURN 0
+ENDFUNCTION

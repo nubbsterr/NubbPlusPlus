@@ -95,3 +95,10 @@
 - 'Compiler optimizations' feature put on hold at the moment; I can definitely implement portions of it but I won't totally change the compiler to work for optimization.
     - Features like constant folding where we evaluate constant expressions at compile time are very possible.
 - NOTE: The previous line number bug requires testing still; I'll make sure that it's properly working when I implement 'compiler optimizations'.
+
+##Nubb++ 3.2 (01/29/2025)
+- Fixed line number bug for compiler errors.
+    - Line numbers in compiler error messages are only featured in the parser at this time. Lexer errors are simple enough to fix anyways.
+- Constant Folding has been aborted since I personally cannot find a way to effectively implement it without writing horrendous, long ugly code.
+    - It would be wise to implement an AST Representation ahead of optimization stuff since it comes before the emitter.
+    - I may write code to produce something like an AST but that involves trees and stuff so no thanks ;) maybe another day but not today.

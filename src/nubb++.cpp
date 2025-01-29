@@ -12,12 +12,12 @@
 int main(int argc, char **argv)
 {
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 3.1\n";
+    std::cout << "[INFO] Nubb++ Compiler 3.2\n";
     auto startCompileTime = std::chrono::high_resolution_clock::now(); // get start time of compilation
 
     if (argc != 2) // too few arguments, no source file given
     {
-        std::cerr << "[FATAL] PRE-COMPILE: Cannot retrieve source file argument.\n";
+        std::cerr << "[FATAL] Cannot retrieve source file argument.\n";
         std::exit(1);
     }
     else // source file given
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            std::cout << "[FATAL] PRE-COMPILE: Unable to access file of filepath: " << argv[1];
+            std::cout << "[FATAL] Unable to access file of filepath: " << argv[1];
             std::exit(1); 
         }
     }
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 int main() // no argv version (for testing only)
 {
     std::string source;
-    std::cout << "[INFO] PRE-COMPILE: Nubb++ Compiler 3.1\n";
+    std::cout << "[INFO] Nubb++ Compiler 3.2\n";
 
     std::ifstream inputFile("code.nubb++"); // hard-coded file path in local directory of executable
     std::string lineContent; 

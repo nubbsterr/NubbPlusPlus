@@ -1,4 +1,4 @@
-(Compatible with >= Nubb++ 2.2)
+( Compatible with >= Nubb++ 2.2 )
 
 FUNCTION test:
     PRINT "Wow, a statement in a function just executed!"
