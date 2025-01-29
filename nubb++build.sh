@@ -5,7 +5,7 @@
 # NOTE: You will need the nubb.exe compiler executable for this to work, as well as g++, which you can install here:
 # https://code.visualstudio.com/docs/cpp/config-mingw (skip past installing VSC and the C++ extension, just install MinGW)
 
-echo $(./nubb++3.1.exe $1)
+echo $(./nubb++3.2.exe $1)
 echo "" # newline
 
 # compiler failed for some reason, not in current directory or some other error
